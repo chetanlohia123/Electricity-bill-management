@@ -1,10 +1,10 @@
 /* Global Styles */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f4f7f6;
+    font-family: 'Poppins', sans-serif;
+    background-color: #121212; /* Dark background */
+    color: #e0e0e0; /* Light text */
     margin: 0;
     padding: 0;
-    color: #333;
     line-height: 1.6;
 }
 
@@ -13,31 +13,31 @@ body {
     max-width: 1200px;
     margin: 20px auto;
     padding: 20px;
-    background-color: #fff;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
+    background-color: #1e1e1e; /* Dark container background */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
 }
 
 h1, h2, h3 {
-    color: #2c3e50;
+    color: #ffffff; /* White headings */
     margin-bottom: 20px;
 }
 
 h1 {
     font-size: 2.5rem;
     text-align: center;
-    border-bottom: 2px solid #3498db;
+    border-bottom: 2px solid #00bcd4; /* Cyan accent */
     padding-bottom: 10px;
 }
 
 h2 {
     font-size: 2rem;
-    color: #3498db;
+    color: #00bcd4; /* Cyan accent */
 }
 
 h3 {
     font-size: 1.5rem;
-    color: #2980b9;
+    color: #00bcd4; /* Cyan accent */
 }
 
 /* Forms */
@@ -48,42 +48,46 @@ form {
     max-width: 500px;
     margin: 0 auto;
     padding: 20px;
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: #2c2c2c; /* Dark form background */
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 label {
     font-weight: bold;
-    color: #34495e;
+    color: #00bcd4; /* Cyan accent */
 }
 
 input, textarea, select {
     padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    border: 1px solid #444; /* Dark border */
+    border-radius: 6px;
     font-size: 1rem;
-    transition: border-color 0.3s ease;
+    background-color: #333; /* Dark input background */
+    color: #e0e0e0; /* Light text */
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 input:focus, textarea:focus, select:focus {
-    border-color: #3498db;
+    border-color: #00bcd4; /* Cyan accent */
     outline: none;
+    box-shadow: 0 0 8px rgba(0, 188, 212, 0.5); /* Glow effect */
 }
 
 button {
     padding: 10px 20px;
-    background-color: #3498db;
-    color: #fff;
+    background-color: #00bcd4; /* Cyan accent */
+    color: #121212; /* Dark text */
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
     font-size: 1rem;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 button:hover {
-    background-color: #2980b9;
+    background-color: #0097a7; /* Darker cyan */
+    transform: translateY(-2px); /* Slight lift */
 }
 
 /* Tables */
@@ -91,9 +95,9 @@ table {
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 20px;
-    background-color: #fff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
+    background-color: #2c2c2c; /* Dark table background */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
     overflow: hidden;
 }
 
@@ -103,70 +107,72 @@ th, td {
 }
 
 th {
-    background-color: #3498db;
-    color: #fff;
+    background-color: #00bcd4; /* Cyan accent */
+    color: #121212; /* Dark text */
     font-weight: bold;
 }
 
 tr:nth-child(even) {
-    background-color: #f9f9f9;
+    background-color: #333; /* Darker row */
 }
 
 tr:hover {
-    background-color: #f1f1f1;
+    background-color: #444; /* Hover effect */
 }
 
 /* Links */
 a {
-    color: #3498db;
+    color: #00bcd4; /* Cyan accent */
     text-decoration: none;
     transition: color 0.3s ease;
 }
 
 a:hover {
-    color: #2980b9;
+    color: #0097a7; /* Darker cyan */
 }
 
 /* Buttons */
 .btn {
     display: inline-block;
     padding: 10px 20px;
-    background-color: #3498db;
-    color: #fff;
-    border-radius: 4px;
+    background-color: #00bcd4; /* Cyan accent */
+    color: #121212; /* Dark text */
+    border-radius: 6px;
     text-align: center;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 .btn:hover {
-    background-color: #2980b9;
+    background-color: #0097a7; /* Darker cyan */
+    transform: translateY(-2px); /* Slight lift */
 }
 
 .btn-danger {
-    background-color: #e74c3c;
+    background-color: #e74c3c; /* Red accent */
 }
 
 .btn-danger:hover {
-    background-color: #c0392b;
+    background-color: #c0392b; /* Darker red */
 }
 
 /* Navigation */
 nav {
-    background-color: #2c3e50;
+    background-color: #1e1e1e; /* Dark nav background */
     padding: 10px 20px;
     margin-bottom: 20px;
-    border-radius: 8px;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 nav a {
-    color: #fff;
+    color: #00bcd4; /* Cyan accent */
     margin-right: 15px;
     font-weight: bold;
     transition: color 0.3s ease;
 }
 
 nav a:hover {
-    color: #3498db;
+    color: #0097a7; /* Darker cyan */
 }
 
 /* Feedback Form */
@@ -174,9 +180,9 @@ nav a:hover {
     max-width: 600px;
     margin: 0 auto;
     padding: 20px;
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: #2c2c2c; /* Dark form background */
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .feedback-form textarea {
@@ -193,25 +199,41 @@ nav a:hover {
 }
 
 .card {
-    background-color: #fff;
+    background-color: #2c2c2c; /* Dark card background */
     padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
 }
 
 .card h3 {
     margin-top: 0;
-    color: #3498db;
+    color: #00bcd4; /* Cyan accent */
 }
 
 .card p {
-    color: #666;
+    color: #e0e0e0; /* Light text */
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in-out;
 }
 
 /* Responsive Design */

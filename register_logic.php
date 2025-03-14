@@ -7,6 +7,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST['email'];
     $password = $_POST['password'];
     $role = $_POST['role'];
+// Check if the email already exists
+$sql_check_email = "SELECT * FROM Customer WHERE email = '$email'";
+$result_check_email = $conn->query($sql_check_email);
+
+if ($result_check_email->num_rows > 0) {
+    $_SESSION['error_message'] = "A customer with this email already exists.";
+    header("Location: register.php");
+    exit();
+    } 
+else {
 
     if ($role == "admin") {
         $sql = "INSERT INTO Admin (login_id, password) VALUES ('$email', '$password')";
@@ -20,6 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         header("Location: index.php");
     } else {
         echo "Error: " . $sql . "<br>" . $conn->error;
+    }
     }
 }
 ?>

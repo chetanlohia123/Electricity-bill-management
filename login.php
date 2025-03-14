@@ -12,6 +12,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($result->num_rows > 0) {
         $_SESSION['admin_id'] = $login_id;
+        $_SESSION['success_message'] = "Logged in successfully as Admin!";
         header("Location: admin/admin_dashboard.php");
         exit();
     }
@@ -22,10 +23,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($result->num_rows > 0) {
         $_SESSION['cust_id'] = $login_id;
+        $_SESSION['success_message'] = "Logged in successfully as User!";
         header("Location: user/user_dashboard.php");
         exit();
     }
 
-    echo "Invalid credentials!";
+    // If login fails
+    $_SESSION['error_message'] = "Invalid credentials!";
+    header("Location: index.php");
+    exit();
 }
 ?>

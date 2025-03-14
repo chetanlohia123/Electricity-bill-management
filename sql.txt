@@ -97,3 +97,53 @@ CREATE TABLE Notification (
     message TEXT NOT NULL,
     FOREIGN KEY (customer_id) REFERENCES Customer(cust_id)
 );
+
+
+-- Tariff Table
+CREATE TABLE Tariff (
+    tariff_id INT PRIMARY KEY AUTO_INCREMENT,
+    category VARCHAR(50) NOT NULL, -- e.g., Domestic, Commercial
+    rate DECIMAL(10, 2) NOT NULL   -- Rate per unit
+);
+
+-- Complaint Table
+CREATE TABLE Complaint (
+    complaint_id INT PRIMARY KEY AUTO_INCREMENT,
+    cust_id INT,
+    complaint_text TEXT NOT NULL,
+    complaint_date DATE NOT NULL,
+    status ENUM('Pending', 'Resolved') DEFAULT 'Pending',
+    FOREIGN KEY (cust_id) REFERENCES Customer(cust_id)
+);
+
+-- Usage_History Table
+CREATE TABLE Usage_History (
+    usage_id INT PRIMARY KEY AUTO_INCREMENT,
+    cust_id INT,
+    meter_id INT,
+    usage_date DATE NOT NULL,
+    units_consumed INT NOT NULL,
+    FOREIGN KEY (cust_id) REFERENCES Customer(cust_id),
+    FOREIGN KEY (meter_id) REFERENCES Meter(meter_id)
+);
+
+-- Payment_History Table
+CREATE TABLE Payment_History (
+    payment_history_id INT PRIMARY KEY AUTO_INCREMENT,
+    cust_id INT,
+    payment_id INT,
+    payment_date DATE NOT NULL,
+    amount_paid DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (cust_id) REFERENCES Customer(cust_id),
+    FOREIGN KEY (payment_id) REFERENCES Payment(payment_id)
+);
+-- User_Check Table (Admin-only view)
+CREATE TABLE User_Check (
+    check_id INT PRIMARY KEY AUTO_INCREMENT,
+    cust_id INT,
+    meter_id INT,
+    balance_to_pay DECIMAL(10, 2) NOT NULL,
+    balance_paid DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (cust_id) REFERENCES Customer(cust_id),
+    FOREIGN KEY (meter_id) REFERENCES Meter(meter_id)
+);
