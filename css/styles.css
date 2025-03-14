@@ -1,8 +1,8 @@
 /* Global Styles */
 body {
     font-family: 'Poppins', sans-serif;
-    background-color: #121212; /* Dark background */
-    color: #e0e0e0; /* Light text */
+    background-color: #f9f9f9; /* Light background */
+    color: #333; /* Dark text */
     margin: 0;
     padding: 0;
     line-height: 1.6;
@@ -13,31 +13,31 @@ body {
     max-width: 1200px;
     margin: 20px auto;
     padding: 20px;
-    background-color: #1e1e1e; /* Dark container background */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    background-color: #fff; /* White container background */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     border-radius: 12px;
 }
 
 h1, h2, h3 {
-    color: #ffffff; /* White headings */
+    color: #2c3e50; /* Dark blue headings */
     margin-bottom: 20px;
 }
 
 h1 {
     font-size: 2.5rem;
     text-align: center;
-    border-bottom: 2px solid #00bcd4; /* Cyan accent */
+    border-bottom: 2px solid #3498db; /* Blue accent */
     padding-bottom: 10px;
 }
 
 h2 {
     font-size: 2rem;
-    color: #00bcd4; /* Cyan accent */
+    color: #3498db; /* Blue accent */
 }
 
 h3 {
     font-size: 1.5rem;
-    color: #00bcd4; /* Cyan accent */
+    color: #2980b9; /* Darker blue */
 }
 
 /* Forms */
@@ -48,36 +48,36 @@ form {
     max-width: 500px;
     margin: 0 auto;
     padding: 20px;
-    background-color: #2c2c2c; /* Dark form background */
+    background-color: #f5f5f5; /* Light form background */
     border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 label {
     font-weight: bold;
-    color: #00bcd4; /* Cyan accent */
+    color: #2c3e50; /* Dark blue */
 }
 
 input, textarea, select {
     padding: 10px;
-    border: 1px solid #444; /* Dark border */
+    border: 1px solid #ddd; /* Light border */
     border-radius: 6px;
     font-size: 1rem;
-    background-color: #333; /* Dark input background */
-    color: #e0e0e0; /* Light text */
+    background-color: #fff; /* White input background */
+    color: #333; /* Dark text */
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 input:focus, textarea:focus, select:focus {
-    border-color: #00bcd4; /* Cyan accent */
+    border-color: #3498db; /* Blue accent */
     outline: none;
-    box-shadow: 0 0 8px rgba(0, 188, 212, 0.5); /* Glow effect */
+    box-shadow: 0 0 8px rgba(52, 152, 219, 0.3); /* Glow effect */
 }
 
 button {
     padding: 10px 20px;
-    background-color: #00bcd4; /* Cyan accent */
-    color: #121212; /* Dark text */
+    background-color: #3498db; /* Blue accent */
+    color: #fff; /* White text */
     border: none;
     border-radius: 6px;
     font-size: 1rem;
@@ -86,7 +86,7 @@ button {
 }
 
 button:hover {
-    background-color: #0097a7; /* Darker cyan */
+    background-color: #2980b9; /* Darker blue */
     transform: translateY(-2px); /* Slight lift */
 }
 
@@ -95,8 +95,8 @@ table {
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 20px;
-    background-color: #2c2c2c; /* Dark table background */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    background-color: #fff; /* White table background */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     border-radius: 12px;
     overflow: hidden;
 }
@@ -107,43 +107,43 @@ th, td {
 }
 
 th {
-    background-color: #00bcd4; /* Cyan accent */
-    color: #121212; /* Dark text */
+    background-color: #3498db; /* Blue accent */
+    color: #fff; /* White text */
     font-weight: bold;
 }
 
 tr:nth-child(even) {
-    background-color: #333; /* Darker row */
+    background-color: #f5f5f5; /* Light gray for even rows */
 }
 
 tr:hover {
-    background-color: #444; /* Hover effect */
+    background-color: #e0e0e0; /* Hover effect */
 }
 
 /* Links */
 a {
-    color: #00bcd4; /* Cyan accent */
+    color: #3498db; /* Blue accent */
     text-decoration: none;
     transition: color 0.3s ease;
 }
 
 a:hover {
-    color: #0097a7; /* Darker cyan */
+    color: #2980b9; /* Darker blue */
 }
 
 /* Buttons */
 .btn {
     display: inline-block;
     padding: 10px 20px;
-    background-color: #00bcd4; /* Cyan accent */
-    color: #121212; /* Dark text */
+    background-color: #3498db; /* Blue accent */
+    color: #fff; /* White text */
     border-radius: 6px;
     text-align: center;
     transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 .btn:hover {
-    background-color: #0097a7; /* Darker cyan */
+    background-color: #2980b9; /* Darker blue */
     transform: translateY(-2px); /* Slight lift */
 }
 
@@ -155,39 +155,40 @@ a:hover {
     background-color: #c0392b; /* Darker red */
 }
 
+.btn-success {
+    background-color: #2ecc71; /* Green accent */
+}
+
+.btn-success:hover {
+    background-color: #27ae60; /* Darker green */
+}
+
+.btn-warning {
+    background-color: #f39c12; /* Orange accent */
+}
+
+.btn-warning:hover {
+    background-color: #e67e22; /* Darker orange */
+}
+
 /* Navigation */
 nav {
-    background-color: #1e1e1e; /* Dark nav background */
+    background-color: #3498db; /* Blue accent */
     padding: 10px 20px;
     margin-bottom: 20px;
     border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 nav a {
-    color: #00bcd4; /* Cyan accent */
+    color: #fff; /* White text */
     margin-right: 15px;
     font-weight: bold;
     transition: color 0.3s ease;
 }
 
 nav a:hover {
-    color: #0097a7; /* Darker cyan */
-}
-
-/* Feedback Form */
-.feedback-form {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 20px;
-    background-color: #2c2c2c; /* Dark form background */
-    border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.feedback-form textarea {
-    height: 150px;
-    resize: vertical;
+    color: #f1c40f; /* Yellow accent */
 }
 
 /* Dashboard Cards */
@@ -199,41 +200,25 @@ nav a:hover {
 }
 
 .card {
-    background-color: #2c2c2c; /* Dark card background */
+    background-color: #fff; /* White card background */
     padding: 20px;
     border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .card h3 {
     margin-top: 0;
-    color: #00bcd4; /* Cyan accent */
+    color: #3498db; /* Blue accent */
 }
 
 .card p {
-    color: #e0e0e0; /* Light text */
-}
-
-/* Animations */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.fade-in {
-    animation: fadeIn 0.5s ease-in-out;
+    color: #666; /* Gray text */
 }
 
 /* Responsive Design */
