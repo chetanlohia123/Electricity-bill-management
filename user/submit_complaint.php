@@ -1,18 +1,30 @@
 <?php
 session_start();
+include('../includes/db_connection.php');
+
 if (!isset($_SESSION['cust_id'])) {
     header("Location: ../index.php");
     exit();
 }
-include('../includes/header.php');
+
+$cust_id = $_SESSION['cust_id'];
 ?>
 
-<h1>Submit Complaint</h1>
-<form method="POST" action="submit_complaint_logic.php">
-    <label for="complaint_text">Complaint:</label>
-    <textarea id="complaint_text" name="complaint_text" required></textarea>
-    
-    <button type="submit">Submit Complaint</button>
-</form>
-
-<?php include('../includes/footer.php'); ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Submit Complaint</title>
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <?php include('../includes/header.php'); ?>
+    <h1>Submit Complaint</h1>
+    <form action="submit_complaint_logic.php" method="post">
+        <label for="complaint">Complaint:</label>
+        <textarea name="complaint" id="complaint" required></textarea>
+        <button type="submit">Submit</button>
+    </form>
+    <?php include('../includes/footer.php'); ?>
+</body>
+</html>

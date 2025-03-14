@@ -18,11 +18,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     // Check if customer
-    $sql = "SELECT * FROM Customer WHERE email = '$login_id' AND password = '$password'";
+    $sql = "SELECT cust_id FROM Customer WHERE email = '$login_id' AND password = '$password'";
     $result = $conn->query($sql);
 
     if ($result->num_rows > 0) {
-        $_SESSION['cust_id'] = $login_id;
+        $row = $result->fetch_assoc();
+        $_SESSION['cust_id'] = $row['cust_id']; // Store cust_id in session
         $_SESSION['success_message'] = "Logged in successfully as User!";
         header("Location: user/user_dashboard.php");
         exit();

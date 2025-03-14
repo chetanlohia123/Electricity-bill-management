@@ -1,54 +1,63 @@
 <?php
 session_start();
+include('../includes/db_connection.php');
+
 if (!isset($_SESSION['cust_id'])) {
     header("Location: ../index.php");
     exit();
 }
-include('../includes/db_connection.php');
-include('../includes/header.php');
 
-// Retrieve the customer ID from the session
 $cust_id = $_SESSION['cust_id'];
+$bill_id = isset($_GET['bill_id']) ? intval($_GET['bill_id']) : 0;
+$bill_details = null;
 
-// Fetch the account ID associated with the customer
-$sql_account = "SELECT account_id FROM Account WHERE cust_id = $cust_id";
-$result_account = $conn->query($sql_account);
-
-if ($result_account->num_rows > 0) {
-    $account = $result_account->fetch_assoc();
-    $account_id = $account['account_id'];
-
-    // Fetch invoices for the customer's account
-    $sql_invoices = "SELECT * FROM Invoice WHERE account_id = $account_id";
-    $result_invoices = $conn->query($sql_invoices);
-} else {
-    echo "No account found for this customer.";
-    exit();
+// Fetch bill details if bill_id is provided
+if ($bill_id > 0) {
+    $query = "SELECT * FROM bills WHERE bill_id = $bill_id AND cust_id = $cust_id AND status = 'Pending'";
+    $result = $conn->query($query);
+    if ($result->num_rows > 0) {
+        $bill_details = $result->fetch_assoc();
+    }
 }
 ?>
 
-<h1>Pay Bill</h1>
-<table border="1">
-    <tr>
-        <th>Invoice ID</th>
-        <th>Amount Due</th>
-        <th>Due Date</th>
-        <th>Action</th>
-    </tr>
-    <?php if ($result_invoices->num_rows > 0): ?>
-        <?php while ($row = $result_invoices->fetch_assoc()): ?>
-        <tr>
-            <td><?= $row['invoice_id'] ?></td>
-            <td><?= $row['amount_due'] ?></td>
-            <td><?= $row['due_date'] ?></td>
-            <td><a href="pay_bill_logic.php?invoice_id=<?= $row['invoice_id'] ?>">Pay Now</a></td>
-        </tr>
-        <?php endwhile; ?>
-    <?php else: ?>
-        <tr>
-            <td colspan="4">No bills found.</td>
-        </tr>
-    <?php endif; ?>
-</table>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pay Bill</title>
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <?php include('../includes/header.php'); ?>
+    <h1>Pay Bill</h1>
 
-<?php include('../includes/footer.php'); ?>
+    <!-- Form to enter bill_id -->
+    <form action="pay_bill.php" method="get">
+        <label for="bill_id">Enter Bill ID:</label>
+        <input type="number" name="bill_id" id="bill_id" required>
+        <button type="submit">Check Bill</button>
+    </form>
+
+    <?php if ($bill_details): ?>
+        <!-- Display bill details -->
+        <div class="bill-details">
+            <h2>Bill Details</h2>
+            <p>Bill ID: <?php echo $bill_details['bill_id']; ?></p>
+            <p>Amount: <?php echo $bill_details['amount']; ?></p>
+            <p>Date: <?php echo $bill_details['date']; ?></p>
+
+            <!-- Form to pay the bill -->
+            <form action="pay_bill_logic.php" method="post">
+                <input type="hidden" name="bill_id" value="<?php echo $bill_details['bill_id']; ?>">
+                <button type="submit">Pay Now</button>
+            </form>
+        </div>
+    <?php elseif ($bill_id > 0): ?>
+        <!-- Display message if no bill is found -->
+        <p>No due payments found for the provided Bill ID.</p>
+    <?php endif; ?>
+
+    <?php include('../includes/footer.php'); ?>
+</body>
+</html>

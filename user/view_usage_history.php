@@ -11,7 +11,7 @@ include('../includes/header.php');
 $cust_id = $_SESSION['cust_id'];
 
 // Fetch usage history for the customer
-$sql = "SELECT * FROM Usage_History WHERE cust_id = $cust_id";
+$sql = "SELECT * FROM Usage_History WHERE cust_id = '$cust_id'";
 $result = $conn->query($sql);
 ?>
 
