@@ -27,10 +27,6 @@ $result = $stmt->get_result();
         <?php endwhile; ?>
     </table>
 </div>
-<style>
-    .container { max-width: 800px; margin: 20px auto; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-    th { background: #f2f2f2; }
-</style>
+<link rel="stylesheet" href="css/styles.css">
+
 <?php include('../includes/footer.php'); ?>

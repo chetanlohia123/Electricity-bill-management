@@ -14,12 +14,8 @@ unset($_SESSION['success_message']);
 <head>
     <meta charset="UTF-8">
     <title>Submit Complaint</title>
-    <style>
-        .container { max-width: 600px; margin: 20px auto; }
-        textarea { width: 100%; height: 100px; }
-        button { background: #4CAF50; color: white; padding: 10px; border: none; }
-        .success { color: green; }
-    </style>
+    <link rel="stylesheet" href="css/styles.css">
+
 </head>
 <body>
     <?php include('../includes/header.php'); ?>

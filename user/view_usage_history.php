@@ -8,7 +8,7 @@ if (!isset($_SESSION['cust_id'])) {
 $cust_id = $_SESSION['cust_id'];
 
 $stmt = $conn->prepare("SELECT u.usage_id, u.usage_date, u.units_consumed, m.meter_number 
-                       discount FROM Usage_History u 
+                        FROM Usage_History u 
                         JOIN Meter m ON u.meter_id = m.meter_id 
                         WHERE u.cust_id = ?");
 $stmt->bind_param("i", $cust_id);
@@ -20,8 +20,7 @@ $result = $stmt->get_result();
 <head>
     <meta charset="UTF-8">
     <title>Usage History</title>
-    <link rel="stylesheet" href="css/styles.css">
-
+    <link rel="stylesheet" href="../css/styles.css">
 </head>
 <body>
     <?php include('../includes/header.php'); ?>

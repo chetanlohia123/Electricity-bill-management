@@ -34,13 +34,13 @@ $notifications = $stmt->get_result()->fetch_assoc()['notifications'];
         <p>Pending Amount: $<?php echo number_format($summary['pending_amount'], 2); ?></p>
     </div>
     <div class="dashboard-cards">
-        <div class="card"><h3>View Bills</h3><a href="view_bills.php">Go</a></div>
-        <div class="card"><h3>Pay Bill</h3><a href="pay_bill.php">Go</a></div>
-        <div class="card"><h3>Usage History</h3><a href="view_usage_history.php">Go</a></div>
-        <div class="card"><h3>Submit Complaint</h3><a href="submit_complaint.php">Go</a></div>
-        <div class="card"><h3>Submit Feedback</h3><a href="submit_feedback.php">Go</a></div>
-        <div class="card"><h3>Payment History</h3><a href="view_payment_history.php">Go</a></div>
-        <div class="card"><h3>Contact Support</h3><a href="contact_support.php">Go</a></div>
+        <div class="card"><a href="view_bills.php"><h3>View Bills</h3></a></div>
+        <div class="card"><a href="pay_bill.php"><h3>Pay Bill</h3></a></div>
+        <div class="card"><a href="view_usage_history.php"><h3>Usage History</h3></a></div>
+        <div class="card"><a href="submit_complaint.php"><h3>Submit Complaint</h3></a></div>
+        <div class="card"><a href="submit_feedback.php"><h3>Submit Feedback</h3></a></div>
+        <div class="card"><a href="view_payment_history.php"><h3>Payment History</h3></a></div>
+        <div class="card"><a href="contact_support.php"><h3>Contact Support</h3></a></div>
     </div>
 </div>
 <?php include('../includes/footer.php'); ?>

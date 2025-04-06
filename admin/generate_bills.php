@@ -86,4 +86,6 @@ $pending = $stmt->get_result()->fetch_assoc()['pending_readings'];
         <?php endwhile; ?>
     </table>
 </div>
+<link rel="stylesheet" href="css/styles.css">
+
 <?php include('../includes/footer.php'); ?>
