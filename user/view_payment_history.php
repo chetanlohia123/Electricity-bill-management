@@ -1,25 +1,24 @@
 <?php
 session_start();
 include('../includes/db_connection.php');
-
 if (!isset($_SESSION['cust_id'])) {
     header("Location: ../index.php");
     exit();
 }
-
 $cust_id = $_SESSION['cust_id'];
 
-// Fetch payment history for the customer
-$query = "SELECT * FROM Payments WHERE cust_id = $cust_id";
-$result = $conn->query($query);
+$stmt = $conn->prepare("SELECT payment_id, amount, payment_date FROM payments WHERE cust_id = ?");
+$stmt->bind_param("i", $cust_id);
+$stmt->execute();
+$result = $stmt->get_result();
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>View Payment History</title>
     <link rel="stylesheet" href="../css/styles.css">
+    <style>table { border-collapse: collapse; } th, td { border: 1px solid #ddd; padding: 8px; }</style>
 </head>
 <body>
     <?php include('../includes/header.php'); ?>
@@ -34,8 +33,8 @@ $result = $conn->query($query);
             <?php while ($row = $result->fetch_assoc()): ?>
                 <tr>
                     <td><?php echo $row['payment_id']; ?></td>
-                    <td><?php echo $row['amount']; ?></td>
-                    <td><?php echo $row['date']; ?></td>
+                    <td>$<?php echo $row['amount']; ?></td>
+                    <td><?php echo $row['payment_date']; ?></td>
                 </tr>
             <?php endwhile; ?>
         </table>

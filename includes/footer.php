@@ -1,6 +1,5 @@
 <footer>
-            <p>&copy; 2023 Electricity Bill System. All rights reserved.</p>
-        </footer>
-    </div>
+        <p>&copy; 2025 Electricity Bill System</p>
+    </footer>
 </body>
 </html>

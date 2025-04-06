@@ -5,4 +5,4 @@ function calculateBill($units) {
         return $units * 13;
     
 }
-?>zx
+?>

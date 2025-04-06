@@ -176,3 +176,48 @@ ALTER TABLE Penalty DROP FOREIGN KEY penalty_ibfk_1;
 DROP TABLE billing;
 ALTER TABLE Payment_History DROP FOREIGN KEY payment_history_ibfk_2;
 DROP TABLE payment;
+
+DELIMITER //
+CREATE TRIGGER after_payment_insert
+AFTER INSERT ON payments
+FOR EACH ROW
+BEGIN
+    INSERT INTO Payment_History (cust_id, payment_id, payment_date, amount_paid)
+    VALUES (NEW.cust_id, NEW.payment_id, NEW.payment_date, NEW.amount);
+END//
+DELIMITER ;
+
+CREATE VIEW Customer_Bill_Summary AS
+SELECT 
+    c.cust_id,
+    c.cust_name,
+    COUNT(b.bill_id) AS total_bills,
+    SUM(b.amount) AS total_amount,
+    SUM(CASE WHEN b.status = 'Pending' THEN b.amount ELSE 0 END) AS pending_amount
+FROM Customer c
+LEFT JOIN bills b ON c.cust_id = b.cust_id
+GROUP BY c.cust_id, c.cust_name;
+
+DELIMITER //
+CREATE PROCEDURE ProcessPendingBills()
+BEGIN
+    DECLARE done INT DEFAULT 0;
+    DECLARE b_id INT;
+    DECLARE b_amount DECIMAL(10, 2);
+    DECLARE cur CURSOR FOR SELECT bill_id, amount FROM bills WHERE status = 'Pending';
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+
+    OPEN cur;
+    read_loop: LOOP
+        FETCH cur INTO b_id, b_amount;
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+        -- Example: Add a penalty if overdue (simplified)
+        INSERT INTO Penalty (bill_id, penalty_amount) VALUES (b_id, b_amount * 0.1);
+    END LOOP;
+    CLOSE cur;
+END//
+DELIMITER ;
+
+INSERT INTO Tariff (category, rate) VALUES ('Domestic', 0.15);

@@ -1,37 +1,40 @@
 <?php
 session_start();
 include('../includes/db_connection.php');
-
 if (!isset($_SESSION['cust_id'])) {
     header("Location: ../index.php");
     exit();
 }
-
 $cust_id = $_SESSION['cust_id'];
 $bill_id = intval($_POST['bill_id']);
 
-// Fetch bill details
-$query = "SELECT * FROM bills WHERE bill_id = $bill_id AND cust_id = $cust_id AND status = 'Pending'";
-$result = $conn->query($query);
+$stmt = $conn->prepare("SELECT * FROM Bills WHERE bill_id = ? AND cust_id = ? AND status = 'Pending'");
+$stmt->bind_param("ii", $bill_id, $cust_id);
+$stmt->execute();
+$result = $stmt->get_result();
 
 if ($result->num_rows > 0) {
-    $bill_details = $result->fetch_assoc();
+    $bill = $result->fetch_assoc();
+    $amount = $bill['amount'];
 
-    // Insert payment into the payments table
-    $amount = $bill_details['amount'];
-    $payment_query = "INSERT INTO payments (cust_id, bill_id, amount, payment_date) VALUES ($cust_id, $bill_id, $amount, CURDATE())";
-    if ($conn->query($payment_query)) {
-        // Update bill status to 'Paid'
-        $update_query = "UPDATE bills SET status = 'Paid' WHERE bill_id = $bill_id";
-        $conn->query($update_query);
-        $_SESSION['success_message'] = "Payment successful!";
+    $stmt = $conn->prepare("INSERT INTO Payments (cust_id, bill_id, amount, payment_date) VALUES (?, ?, ?, CURDATE())");
+    $stmt->bind_param("iid", $cust_id, $bill_id, $amount);
+    if ($stmt->execute()) {
+        $stmt = $conn->prepare("UPDATE Bills SET status = 'Paid' WHERE bill_id = ?");
+        $stmt->bind_param("i", $bill_id);
+        $stmt->execute();
+
+        $stmt = $conn->prepare("INSERT INTO Invoice (bill_id, cust_id, amount_due, issue_date) VALUES (?, ?, ?, CURDATE())");
+        $stmt->bind_param("iid", $bill_id, $cust_id, $amount);
+        $stmt->execute();
+
+        $_SESSION['success_message'] = "Payment successful! Invoice generated.";
     } else {
-        $_SESSION['error_message'] = "Error processing payment: " . $conn->error;
+        $_SESSION['error_message'] = "Payment failed: " . $conn->error;
     }
 } else {
-    $_SESSION['error_message'] = "No pending bill found for the provided Bill ID.";
+    $_SESSION['error_message'] = "No pending bill found.";
 }
-
 header("Location: pay_bill.php");
 exit();
 ?>

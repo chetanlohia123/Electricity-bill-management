@@ -4,12 +4,8 @@ if (isset($_SESSION['admin_id']) || isset($_SESSION['cust_id'])) {
     header("Location: " . (isset($_SESSION['admin_id']) ? "admin/admin_dashboard.php" : "user/user_dashboard.php"));
     exit();
 }
-
-// Check for success or error messages
 $success_message = isset($_SESSION['success_message']) ? $_SESSION['success_message'] : null;
 $error_message = isset($_SESSION['error_message']) ? $_SESSION['error_message'] : null;
-
-// Clear the messages after displaying them
 unset($_SESSION['success_message']);
 unset($_SESSION['error_message']);
 ?>
@@ -17,37 +13,29 @@ unset($_SESSION['error_message']);
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Login - Electricity Bill System</title>
     <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .container { max-width: 400px; margin: 50px auto; padding: 20px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { color: green; text-align: center; } 
+        .error { color: red; text-align: center; }
+        input, button { width: 100%; padding: 10px; margin: 5px 0; }
+        button { background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+    </style>
 </head>
 <body>
     <div class="container">
-        <h1>Electricity Bill System</h1>
-
-        <!-- Display success or error messages -->
-        <?php if ($success_message): ?>
-            <div class="alert alert-success">
-                <?= $success_message ?>
-            </div>
-        <?php endif; ?>
-
-        <?php if ($error_message): ?>
-            <div class="alert alert-error">
-                <?= $error_message ?>
-            </div>
-        <?php endif; ?>
-
+        <h1>Login</h1>
+        <?php if ($success_message): ?><p class="success"><?= $success_message ?></p><?php endif; ?>
+        <?php if ($error_message): ?><p class="error"><?= $error_message ?></p><?php endif; ?>
         <form action="login.php" method="POST">
-            <label for="login_id">Login ID:</label>
-            <input type="text" id="login_id" name="login_id" required>
-            
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
-            
+            <label>Email/Login ID:</label>
+            <input type="text" name="login_id" required>
+            <label>Password:</label>
+            <input type="password" name="password" required>
             <button type="submit">Login</button>
         </form>
-        <p>Don't have an account? <a href="register.php">Register here</a></p>
+        <p>Not registered? <a href="register.php">Sign Up</a></p>
     </div>
 </body>
 </html>

@@ -1,36 +1,47 @@
 <?php
 session_start();
 include('includes/db_connection.php');
-
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $name = $_POST['name'];
     $email = $_POST['email'];
     $password = $_POST['password'];
+    $address = $_POST['address'];
     $role = $_POST['role'];
-// Check if the email already exists
-$sql_check_email = "SELECT * FROM Customer WHERE email = '$email'";
-$result_check_email = $conn->query($sql_check_email);
 
-if ($result_check_email->num_rows > 0) {
-    $_SESSION['error_message'] = "A customer with this email already exists.";
-    header("Location: register.php");
-    exit();
-    } 
-else {
+    $stmt = $conn->prepare("SELECT cust_id FROM Customer WHERE email = ?");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    if ($stmt->get_result()->num_rows > 0) {
+        $_SESSION['error_message'] = "Email already registered!";
+        header("Location: register.php");
+        exit();
+    }
 
     if ($role == "admin") {
-        $sql = "INSERT INTO Admin (login_id, password) VALUES ('$email', '$password')";
-    } else {
-        // Provide a default address if not provided in the form
-        $address = isset($_POST['address']) ? $_POST['address'] : 'Not Provided';
-        $sql = "INSERT INTO Customer (cust_name, email, password, address) VALUES ('$name', '$email', '$password', '$address')";
-    }
-
-    if ($conn->query($sql)) {
+        $stmt = $conn->prepare("INSERT INTO Admin (login_id, password) VALUES (?, ?)");
+        $stmt->bind_param("ss", $email, $password);
+        $stmt->execute();
         header("Location: index.php");
     } else {
-        echo "Error: " . $sql . "<br>" . $conn->error;
+        $stmt = $conn->prepare("INSERT INTO Customer (cust_name, email, password, address) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("ssss", $name, $email, $password, $address);
+        $stmt->execute();
+        $cust_id = $conn->insert_id;
+
+        // Create an Account for the Customer
+        $account_number = "ACC" . str_pad($cust_id, 6, "0", STR_PAD_LEFT);
+        $stmt = $conn->prepare("INSERT INTO Account (cust_id, account_number) VALUES (?, ?)");
+        $stmt->bind_param("is", $cust_id, $account_number);
+        $stmt->execute();
+
+        // Assign a Meter
+        $meter_number = "MTR" . str_pad($cust_id, 6, "0", STR_PAD_LEFT);
+        $stmt = $conn->prepare("INSERT INTO Meter (cust_id, meter_number, installation_date) VALUES (?, ?, CURDATE())");
+        $stmt->bind_param("is", $cust_id, $meter_number);
+        $stmt->execute();
+
+        header("Location: index.php");
     }
-    }
+    exit();
 }
 ?>

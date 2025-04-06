@@ -1,23 +1,21 @@
 <?php
 session_start();
 include('../includes/db_connection.php');
-
 if (!isset($_SESSION['cust_id'])) {
     header("Location: ../index.php");
     exit();
 }
-
 $cust_id = $_SESSION['cust_id'];
-$feedback = $_POST['feedback'];
+$feedback = $_POST['feedback_text'];
 
-// Insert feedback into database
-$query = "INSERT INTO Feedback (cust_id, feedback) VALUES ($cust_id, '$feedback')";
-if ($conn->query($query)) {
+$stmt = $conn->prepare("INSERT INTO Feedback (cust_id, feedback_text, feedback_date) VALUES (?, ?, CURDATE())");
+$stmt->bind_param("is", $cust_id, $feedback_text);
+if ($stmt->execute()) {
     $_SESSION['success_message'] = "Feedback submitted successfully!";
 } else {
     $_SESSION['error_message'] = "Error: " . $conn->error;
 }
-
 header("Location: submit_feedback.php");
 exit();
 ?>
+
