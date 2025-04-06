@@ -28,12 +28,7 @@ if ($bill_id > 0) {
 <head>
     <meta charset="UTF-8">
     <title>Pay Bill</title>
-    <style>
-        .container { max-width: 600px; margin: 20px auto; padding: 20px; }
-        .success { color: green; } .error { color: red; }
-        form { margin: 20px 0; }
-        button { background: #4CAF50; color: white; padding: 10px; border: none; }
-    </style>
+    <link rel="stylesheet" href="../css/styles.css">
 </head>
 <body>
     <?php include('../includes/header.php'); ?>
@@ -42,8 +37,8 @@ if ($bill_id > 0) {
         <?php if ($success_message): ?><p class="success"><?= $success_message ?></p><?php endif; ?>
         <?php if ($error_message): ?><p class="error"><?= $error_message ?></p><?php endif; ?>
         <form action="pay_bill.php" method="get">
-            <label>Enter Bill ID:</label>
-            <input type="number" name="bill_id" required>
+            <label for="bill_id">Enter Bill ID:</label>
+            <input type="number" id="bill_id" name="bill_id" required>
             <button type="submit">Check Bill</button>
         </form>
         <?php if ($bill_details): ?>

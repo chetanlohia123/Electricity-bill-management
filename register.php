@@ -10,24 +10,18 @@ unset($_SESSION['error_message']);
     <meta charset="UTF-8">
     <title>Register - Electricity Bill System</title>
     <link rel="stylesheet" href="css/styles.css">
-    <style>
-        .container { max-width: 400pagpx; margin: 50px auto; padding: 20px; border: 1px solid #ccc; border-radius: 5px; }
-        .error { color: red; text-align: center; }
-        input, select, button { width: 100%; padding: 10px; margin: 5px 0; }
-        button { background-color: #4CAF50; color: white; border: none; cursor: pointer; }
-    </style>
 </head>
 <body>
     <div class="container">
         <h1>Register</h1>
         <?php if ($error_message): ?><p class="error"><?= $error_message ?></p><?php endif; ?>
         <form action="register_logic.php" method="POST">
-            <label>Name:</label><input type="text" name="name" required>
-            <label>Email:</label><input type="email" name="email" required>
-            <label>Password:</label><input type="password" name="password" required>
-            <label>Address:</label><input type="text" name="address" required>
-            <label>Role:</label>
-            <select name="role" required>
+            <label for="name">Name:</label><input type="text" id="name" name="name" required>
+            <label for="email">Email:</label><input type="email" id="email" name="email" required>
+            <label for="password">Password:</label><input type="password" id="password" name="password" required>
+            <label for="address">Address:</label><input type="text" id="address" name="address" required>
+            <label for="role">Role:</label>
+            <select id="role" name="role" required>
                 <option value="user">User</option>
                 <option value="admin">Admin</option>
             </select>

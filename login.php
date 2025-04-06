@@ -10,7 +10,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->execute();
     if ($stmt->get_result()->num_rows > 0) {
         $_SESSION['admin_id'] = $login_id;
-        $_SESSION['success_message'] = "Welcome, Admin!";
+        $_SESSION['success_message'] = "Logged in Successfully!";
         header("Location: admin/admin_dashboard.php");
         exit();
     }
@@ -22,7 +22,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($result->num_rows > 0) {
         $row = $result->fetch_assoc();
         $_SESSION['cust_id'] = $row['cust_id'];
-        $_SESSION['success_message'] = "Welcome back!";
+        $_SESSION['success_message'] = "Logged in Successfully!";
         header("Location: user/user_dashboard.php");
         exit();
     }

@@ -33,7 +33,7 @@ if ($result->num_rows > 0) {
         $_SESSION['error_message'] = "Payment failed: " . $conn->error;
     }
 } else {
-    $_SESSION['error_message'] = "No pending bill found.";
+    $_SESSION['error_message'] = "No pending bill found or already paid.";
 }
 header("Location: pay_bill.php");
 exit();

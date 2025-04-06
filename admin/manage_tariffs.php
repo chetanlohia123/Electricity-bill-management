@@ -7,37 +7,41 @@ if (!isset($_SESSION['admin_id'])) {
 include('../includes/db_connection.php');
 include('../includes/header.php');
 
-// Fetch all tariffs
-$sql = "SELECT * FROM Tariff";
-$result = $conn->query($sql);
+if (isset($_POST['add_tariff'])) {
+    $category = $_POST['category'];
+    $rate = floatval($_POST['rate']);
+    $stmt = $conn->prepare("INSERT INTO Tariff (category, rate) VALUES (?, ?)");
+    $stmt->bind_param("sd", $category, $rate);
+    $stmt->execute();
+}
+
+$stmt = $conn->prepare("SELECT tariff_id, category, rate FROM Tariff");
+$stmt->execute();
+$result = $stmt->get_result();
 ?>
-
-<h1>Manage Tariffs</h1>
-<table border="1">
-    <tr>
-        <th>Tariff ID</th>
-        <th>Category</th>
-        <th>Rate</th>
-        <th>Actions</th>
-    </tr>
-    <?php if ($result->num_rows > 0): ?>
+<div class="container">
+    <h1>Manage Tariffs</h1>
+    <form method="post" style="margin-bottom: 20px;">
+        <label>Category:</label><input type="text" name="category" required>
+        <label>Rate ($/unit):</label><input type="number" step="0.01" name="rate" required>
+        <button type="submit" name="add_tariff" style="background: #4CAF50; color: white; border: none; padding: 10px;">Add Tariff</button>
+    </form>
+    <table>
+        <tr><th>ID</th><th>Category</th><th>Rate</th></tr>
         <?php while ($row = $result->fetch_assoc()): ?>
-        <tr>
-            <td><?= $row['tariff_id'] ?></td>
-            <td><?= $row['category'] ?></td>
-            <td><?= $row['rate'] ?></td>
-            <td>
-                <a href="edit_tariff.php?id=<?= $row['tariff_id'] ?>">Edit</a> |
-                <a href="delete_tariff.php?id=<?= $row['tariff_id'] ?>">Delete</a>
-            </td>
-        </tr>
+            <tr>
+                <td><?php echo $row['tariff_id']; ?></td>
+                <td><?php echo $row['category']; ?></td>
+                <td>$<?php echo $row['rate']; ?></td>
+            </tr>
         <?php endwhile; ?>
-    <?php else: ?>
-        <tr>
-            <td colspan="4">No tariffs found.</td>
-        </tr>
-    <?php endif; ?>
-</table>
-<a href="add_tariff.php">Add New Tariff</a>
-
+    </table>
+</div>
+<style>
+    .container { max-width: 800px; margin: 20px auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background: #f2f2f2; }
+    input { width: 150px; margin: 5px; }
+</style>
 <?php include('../includes/footer.php'); ?>

@@ -13,7 +13,7 @@ unset($_SESSION['success_message']);
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Submit Feedback</title>
+    <title>Contact Support</title>
     <style>
         .container { max-width: 600px; margin: 20px auto; }
         textarea { width: 100%; height: 100px; }
@@ -24,11 +24,11 @@ unset($_SESSION['success_message']);
 <body>
     <?php include('../includes/header.php'); ?>
     <div class="container">
-        <h1>Submit Feedback</h1>
+        <h1>Contact Support</h1>
         <?php if ($success_message): ?><p class="success"><?= $success_message ?></p><?php endif; ?>
-        <form action="submit_feedback_logic.php" method="post">
-            <label>Your Feedback:</label>
-            <textarea name="feedback_text" required></textarea>
+        <form action="contact_support_logic.php" method="post">
+            <label>Your Issue:</label>
+            <textarea name="issue_description" required></textarea>
             <button type="submit">Submit</button>
         </form>
     </div>

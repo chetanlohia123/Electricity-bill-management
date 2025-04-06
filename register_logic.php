@@ -21,27 +21,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt = $conn->prepare("INSERT INTO Admin (login_id, password) VALUES (?, ?)");
         $stmt->bind_param("ss", $email, $password);
         $stmt->execute();
-        header("Location: index.php");
     } else {
         $stmt = $conn->prepare("INSERT INTO Customer (cust_name, email, password, address) VALUES (?, ?, ?, ?)");
         $stmt->bind_param("ssss", $name, $email, $password, $address);
         $stmt->execute();
         $cust_id = $conn->insert_id;
 
-        // Create an Account for the Customer
         $account_number = "ACC" . str_pad($cust_id, 6, "0", STR_PAD_LEFT);
         $stmt = $conn->prepare("INSERT INTO Account (cust_id, account_number) VALUES (?, ?)");
         $stmt->bind_param("is", $cust_id, $account_number);
         $stmt->execute();
 
-        // Assign a Meter
         $meter_number = "MTR" . str_pad($cust_id, 6, "0", STR_PAD_LEFT);
         $stmt = $conn->prepare("INSERT INTO Meter (cust_id, meter_number, installation_date) VALUES (?, ?, CURDATE())");
         $stmt->bind_param("is", $cust_id, $meter_number);
         $stmt->execute();
-
-        header("Location: index.php");
     }
+    $_SESSION['success_message'] = "Registered Successfully!";
+    header("Location: index.php");
     exit();
 }
 ?>

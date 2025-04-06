@@ -43,11 +43,4 @@ $notifications = $stmt->get_result()->fetch_assoc()['notifications'];
         <div class="card"><h3>Contact Support</h3><a href="contact_support.php">Go</a></div>
     </div>
 </div>
-<style>
-    .dashboard-container { max-width: 800px; margin: 20px auto; }
-    .summary { background: #f9f9f9; padding: 15px; border-radius: 5px; }
-    .dashboard-cards { display: flex; flex-wrap: wrap; gap: 20px; }
-    .card { border: 1px solid #ddd; padding: 15px; width: 150px; text-align: center; }
-    .card a { color: #4CAF50; text-decoration: none; }
-</style>
 <?php include('../includes/footer.php'); ?>

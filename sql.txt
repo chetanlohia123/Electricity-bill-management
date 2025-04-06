@@ -1,15 +1,13 @@
--- Create the database
-CREATE DATABASE IF NOT EXISTS electricity_bill_system;
+-- Drop and recreate the database to start fresh
+DROP DATABASE IF EXISTS electricity_bill_system;
+CREATE DATABASE electricity_bill_system;
 USE electricity_bill_system;
 
--- Admin Table
-CREATE TABLE Admin (
-    admin_id INT PRIMARY KEY AUTO_INCREMENT,
-    login_id VARCHAR(50) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL
-);
+-- Step 1: Disable foreign key checks temporarily
+SET FOREIGN_KEY_CHECKS = 0;
 
--- Customer Table
+-- Step 2: Define 16 essential tables
+-- 1. Customer: Stores customer info
 CREATE TABLE Customer (
     cust_id INT PRIMARY KEY AUTO_INCREMENT,
     cust_name VARCHAR(100) NOT NULL,
@@ -18,95 +16,93 @@ CREATE TABLE Customer (
     password VARCHAR(255) NOT NULL
 );
 
--- Account Table
+-- 2. Admin: Stores admin credentials
+CREATE TABLE Admin (
+    admin_id INT PRIMARY KEY AUTO_INCREMENT,
+    login_id VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL
+);
+
+-- 3. Account: Links customers to accounts
 CREATE TABLE Account (
     account_id INT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(100) NOT NULL,
     cust_id INT,
+    account_number VARCHAR(50) UNIQUE NOT NULL,
+    status ENUM('Active', 'Inactive') DEFAULT 'Active',
     FOREIGN KEY (cust_id) REFERENCES Customer(cust_id)
 );
 
--- Meter Table
+-- 4. Meter: Tracks customer meters
 CREATE TABLE Meter (
     meter_id INT PRIMARY KEY AUTO_INCREMENT,
     cust_id INT,
+    meter_number VARCHAR(50) UNIQUE NOT NULL,
     installation_date DATE NOT NULL,
-    status ENUM('Active', 'Inactive') NOT NULL,
     FOREIGN KEY (cust_id) REFERENCES Customer(cust_id)
 );
 
--- Meter Readings Table
+-- 5. Meter_Readings: Records meter usage
 CREATE TABLE Meter_Readings (
     reading_id INT PRIMARY KEY AUTO_INCREMENT,
     meter_id INT,
     reading_date DATE NOT NULL,
-    reading_value INT NOT NULL,
+    units_consumed INT NOT NULL,
     FOREIGN KEY (meter_id) REFERENCES Meter(meter_id)
 );
 
--- Invoice Table
-CREATE TABLE Invoice (
-    invoice_id INT PRIMARY KEY AUTO_INCREMENT,
-    account_id INT,
-    meter_id INT,
-    amount_due DECIMAL(10, 2) NOT NULL,
-    due_date DATE NOT NULL,
-    FOREIGN KEY (account_id) REFERENCES Account(account_id),
-    FOREIGN KEY (meter_id) REFERENCES Meter(meter_id)
+-- 6. Tariff: Stores tariff rates
+CREATE TABLE Tariff (
+    tariff_id INT PRIMARY KEY AUTO_INCREMENT,
+    category VARCHAR(50) NOT NULL,
+    rate DECIMAL(10, 2) NOT NULL
 );
 
--- Billing Table
-CREATE TABLE Billing (
+-- 7. Bills: Stores customer bills
+CREATE TABLE Bills (
     bill_id INT PRIMARY KEY AUTO_INCREMENT,
-    invoice_id INT,
-    payment_due_date DATE NOT NULL,
-    FOREIGN KEY (invoice_id) REFERENCES Invoice(invoice_id)
+    cust_id INT,
+    account_id INT,
+    amount DECIMAL(10, 2) NOT NULL,
+    bill_date DATE NOT NULL,
+    due_date DATE NOT NULL,
+    status ENUM('Pending', 'Paid') DEFAULT 'Pending',
+    FOREIGN KEY (cust_id) REFERENCES Customer(cust_id),
+    FOREIGN KEY (account_id) REFERENCES Account(account_id),
+    CONSTRAINT chk_amount CHECK (amount > 0)
 );
 
--- Payment Table
-CREATE TABLE Payment (
+-- 8. Payments: Records bill payments
+CREATE TABLE Payments (
     payment_id INT PRIMARY KEY AUTO_INCREMENT,
+    cust_id INT,
     bill_id INT,
-    amount_paid DECIMAL(10, 2) NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL,
     payment_date DATE NOT NULL,
-    method_name VARCHAR(50) NOT NULL,
-    FOREIGN KEY (bill_id) REFERENCES Billing(bill_id)
+    FOREIGN KEY (cust_id) REFERENCES Customer(cust_id),
+    FOREIGN KEY (bill_id) REFERENCES Bills(bill_id)
 );
 
--- Penalty Table
+-- 9. Payment_History: Logs all payments
+CREATE TABLE Payment_History (
+    history_id INT PRIMARY KEY AUTO_INCREMENT,
+    payment_id INT,
+    cust_id INT,
+    amount DECIMAL(10, 2) NOT NULL,
+    payment_date DATE NOT NULL,
+    FOREIGN KEY (cust_id) REFERENCES Customer(cust_id),
+    FOREIGN KEY (payment_id) REFERENCES Payments(payment_id)
+);
+
+-- 10. Penalty: Tracks penalties for late payments
 CREATE TABLE Penalty (
     penalty_id INT PRIMARY KEY AUTO_INCREMENT,
     bill_id INT,
     penalty_amount DECIMAL(10, 2) NOT NULL,
-    FOREIGN KEY (bill_id) REFERENCES Billing(bill_id)
+    penalty_date DATE NOT NULL,
+    FOREIGN KEY (bill_id) REFERENCES Bills(bill_id)
 );
 
--- Feedback Table
-CREATE TABLE Feedback (
-    feedback_id INT PRIMARY KEY AUTO_INCREMENT,
-    cust_id INT,
-    feedback_text TEXT NOT NULL,
-    feedback_date DATE NOT NULL,
-    FOREIGN KEY (cust_id) REFERENCES Customer(cust_id)
-);
-
--- Notification Table
-CREATE TABLE Notification (
-    not_id INT PRIMARY KEY AUTO_INCREMENT,
-    customer_id INT,
-    message TEXT NOT NULL,
-    FOREIGN KEY (customer_id) REFERENCES Customer(cust_id)
-);
-
-
--- Tariff Table
-CREATE TABLE Tariff (
-    tariff_id INT PRIMARY KEY AUTO_INCREMENT,
-    category VARCHAR(50) NOT NULL, -- e.g., Domestic, Commercial
-    rate DECIMAL(10, 2) NOT NULL   -- Rate per unit
-);
-
--- Complaint Table
+-- 11. Complaint: Stores customer complaints
 CREATE TABLE Complaint (
     complaint_id INT PRIMARY KEY AUTO_INCREMENT,
     cust_id INT,
@@ -116,7 +112,16 @@ CREATE TABLE Complaint (
     FOREIGN KEY (cust_id) REFERENCES Customer(cust_id)
 );
 
--- Usage_History Table
+-- 12. Feedback: Stores customer feedback
+CREATE TABLE Feedback (
+    feedback_id INT PRIMARY KEY AUTO_INCREMENT,
+    cust_id INT,
+    feedback_text TEXT NOT NULL,
+    feedback_date DATE NOT NULL,
+    FOREIGN KEY (cust_id) REFERENCES Customer(cust_id)
+);
+
+-- 13. Usage_History: Tracks historical usage
 CREATE TABLE Usage_History (
     usage_id INT PRIMARY KEY AUTO_INCREMENT,
     cust_id INT,
@@ -127,66 +132,49 @@ CREATE TABLE Usage_History (
     FOREIGN KEY (meter_id) REFERENCES Meter(meter_id)
 );
 
--- Payment_History Table
-CREATE TABLE Payment_History (
-    payment_history_id INT PRIMARY KEY AUTO_INCREMENT,
+-- 14. Notification: Stores system notifications
+CREATE TABLE Notification (
+    notification_id INT PRIMARY KEY AUTO_INCREMENT,
     cust_id INT,
-    payment_id INT,
-    payment_date DATE NOT NULL,
-    amount_paid DECIMAL(10, 2) NOT NULL,
-    FOREIGN KEY (cust_id) REFERENCES Customer(cust_id),
-    FOREIGN KEY (payment_id) REFERENCES Payment(payment_id)
-);
--- User_Check Table (Admin-only view)
-CREATE TABLE User_Check (
-    check_id INT PRIMARY KEY AUTO_INCREMENT,
-    cust_id INT,
-    meter_id INT,
-    balance_to_pay DECIMAL(10, 2) NOT NULL,
-    balance_paid DECIMAL(10, 2) NOT NULL,
-    FOREIGN KEY (cust_id) REFERENCES Customer(cust_id),
-    FOREIGN KEY (meter_id) REFERENCES Meter(meter_id)
+    message TEXT NOT NULL,
+    notification_date DATE NOT NULL,
+    status ENUM('Sent', 'Pending') DEFAULT 'Pending',
+    FOREIGN KEY (cust_id) REFERENCES Customer(cust_id)
 );
 
-CREATE TABLE bills (
-    ->     bill_id INT AUTO_INCREMENT PRIMARY KEY,
-    ->     cust_id INT NOT NULL,
-    ->     amount DECIMAL(10, 2) NOT NULL,
-    ->     date DATE NOT NULL,
-    ->     status ENUM('Pending', 'Paid') DEFAULT 'Pending',
-    ->     FOREIGN KEY (cust_id) REFERENCES customer(cust_id)
-    -> );
-Query OK, 0 rows affected (0.04 sec)
+-- 15. Invoice: Formal billing documents
+CREATE TABLE Invoice (
+    invoice_id INT PRIMARY KEY AUTO_INCREMENT,
+    bill_id INT,
+    cust_id INT,
+    amount_due DECIMAL(10, 2) NOT NULL,
+    issue_date DATE NOT NULL,
+    FOREIGN KEY (bill_id) REFERENCES Bills(bill_id),
+    FOREIGN KEY (cust_id) REFERENCES Customer(cust_id)
+);
 
-mysql> CREATE TABLE payments (
-    ->     payment_id INT AUTO_INCREMENT PRIMARY KEY,
-    ->     cust_id INT NOT NULL,
-    ->     bill_id INT NOT NULL,
-    ->     amount DECIMAL(10, 2) NOT NULL,
-    ->     payment_date DATE NOT NULL,
-    ->     FOREIGN KEY (cust_id) REFERENCES customer(cust_id),
-    ->     FOREIGN KEY (bill_id) REFERENCES bills(bill_id)
-    -> );
-Query OK, 0 rows affected (0.02 sec)
+-- 16. Customer_Support: Tracks customer support interactions
+CREATE TABLE Customer_Support (
+    support_id INT PRIMARY KEY AUTO_INCREMENT,
+    cust_id INT,
+    issue_description TEXT NOT NULL,
+    support_date DATE NOT NULL,
+    resolution_status ENUM('Open', 'Closed') DEFAULT 'Open',
+    FOREIGN KEY (cust_id) REFERENCES Customer(cust_id)
+);
 
-ALTER TABLE Feedback ADD COLUMN feedback TEXT NOT NULL;
-
-ALTER TABLE Payment DROP FOREIGN KEY payment_ibfk_1;
-ALTER TABLE Penalty DROP FOREIGN KEY penalty_ibfk_1;
-DROP TABLE billing;
-ALTER TABLE Payment_History DROP FOREIGN KEY payment_history_ibfk_2;
-DROP TABLE payment;
-
+-- Step 3: Add Trigger for Payment History
 DELIMITER //
 CREATE TRIGGER after_payment_insert
-AFTER INSERT ON payments
+AFTER INSERT ON Payments
 FOR EACH ROW
 BEGIN
-    INSERT INTO Payment_History (cust_id, payment_id, payment_date, amount_paid)
-    VALUES (NEW.cust_id, NEW.payment_id, NEW.payment_date, NEW.amount);
+    INSERT INTO Payment_History (payment_id, cust_id, amount, payment_date)
+    VALUES (NEW.payment_id, NEW.cust_id, NEW.amount, NEW.payment_date);
 END//
 DELIMITER ;
 
+-- Step 4: Add View for Bill Summary
 CREATE VIEW Customer_Bill_Summary AS
 SELECT 
     c.cust_id,
@@ -195,29 +183,184 @@ SELECT
     SUM(b.amount) AS total_amount,
     SUM(CASE WHEN b.status = 'Pending' THEN b.amount ELSE 0 END) AS pending_amount
 FROM Customer c
-LEFT JOIN bills b ON c.cust_id = b.cust_id
+LEFT JOIN Bills b ON c.cust_id = b.cust_id
 GROUP BY c.cust_id, c.cust_name;
 
-DELIMITER //
-CREATE PROCEDURE ProcessPendingBills()
-BEGIN
-    DECLARE done INT DEFAULT 0;
-    DECLARE b_id INT;
-    DECLARE b_amount DECIMAL(10, 2);
-    DECLARE cur CURSOR FOR SELECT bill_id, amount FROM bills WHERE status = 'Pending';
-    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+-- Step 5: Re-enable foreign key checks
+SET FOREIGN_KEY_CHECKS = 1;
 
-    OPEN cur;
-    read_loop: LOOP
-        FETCH cur INTO b_id, b_amount;
-        IF done THEN
-            LEAVE read_loop;
-        END IF;
-        -- Example: Add a penalty if overdue (simplified)
-        INSERT INTO Penalty (bill_id, penalty_amount) VALUES (b_id, b_amount * 0.1);
-    END LOOP;
-    CLOSE cur;
-END//
-DELIMITER ;
-
+-- Step 6: Insert Sample Tariff Data
 INSERT INTO Tariff (category, rate) VALUES ('Domestic', 0.15);
+
+
+
+-- Use the database
+USE electricity_bill_system;
+
+-- 1. Customer (15 records)
+INSERT INTO Customer (cust_name, address, email, password) VALUES
+('John Doe', '123 Main St', 'john@example.com', 'pass123'),
+('Jane Smith', '456 Oak St', 'jane@example.com', 'pass456'),
+('Alice Brown', '789 Pine St', 'alice@example.com', 'pass789'),
+('Bob Johnson', '101 Elm St', 'bob@example.com', 'pass101'),
+('Carol White', '202 Birch St', 'carol@example.com', 'pass202'),
+('David Lee', '303 Cedar St', 'david@example.com', 'pass303'),
+('Eve Black', '404 Maple St', 'eve@example.com', 'pass404'),
+('Frank Green', '505 Spruce St', 'frank@example.com', 'pass505'),
+('Grace Hill', '606 Willow St', 'grace@example.com', 'pass606'),
+('Hank Gray', '707 Ash St', 'hank@example.com', 'pass707'),
+('Ivy Blue', '808 Cherry St', 'ivy@example.com', 'pass808'),
+('Jack Red', '909 Poplar St', 'jack@example.com', 'pass909'),
+('Kelly Yellow', '111 Lime St', 'kelly@example.com', 'pass111'),
+('Liam Orange', '222 Peach St', 'liam@example.com', 'pass222'),
+('Mia Purple', '333 Plum St', 'mia@example.com', 'pass333');
+
+-- 2. Admin (15 records)
+INSERT INTO Admin (login_id, password) VALUES
+('admin1@example.com', 'admin123'),
+('admin2@example.com', 'admin456'),
+('admin3@example.com', 'admin789'),
+('admin4@example.com', 'admin101'),
+('admin5@example.com', 'admin202'),
+('admin6@example.com', 'admin303'),
+('admin7@example.com', 'admin404'),
+('admin8@example.com', 'admin505'),
+('admin9@example.com', 'admin606'),
+('admin10@example.com', 'admin707'),
+('admin11@example.com', 'admin808'),
+('admin12@example.com', 'admin909'),
+('admin13@example.com', 'admin111'),
+('admin14@example.com', 'admin222'),
+('admin15@example.com', 'admin333');
+
+-- 3. Account (15 records)
+INSERT INTO Account (cust_id, account_number, status) VALUES
+(1, 'ACC000001', 'Active'), (2, 'ACC000002', 'Active'), (3, 'ACC000003', 'Active'),
+(4, 'ACC000004', 'Active'), (5, 'ACC000005', 'Active'), (6, 'ACC000006', 'Active'),
+(7, 'ACC000007', 'Active'), (8, 'ACC000008', 'Active'), (9, 'ACC000009', 'Active'),
+(10, 'ACC000010', 'Active'), (11, 'ACC000011', 'Active'), (12, 'ACC000012', 'Active'),
+(13, 'ACC000013', 'Active'), (14, 'ACC000014', 'Active'), (15, 'ACC000015', 'Active');
+
+-- 4. Meter (15 records)
+INSERT INTO Meter (cust_id, meter_number, installation_date) VALUES
+(1, 'MTR000001', '2025-01-01'), (2, 'MTR000002', '2025-01-02'), (3, 'MTR000003', '2025-01-03'),
+(4, 'MTR000004', '2025-01-04'), (5, 'MTR000005', '2025-01-05'), (6, 'MTR000006', '2025-01-06'),
+(7, 'MTR000007', '2025-01-07'), (8, 'MTR000008', '2025-01-08'), (9, 'MTR000009', '2025-01-09'),
+(10, 'MTR000010', '2025-01-10'), (11, 'MTR000011', '2025-01-11'), (12, 'MTR000012', '2025-01-12'),
+(13, 'MTR000013', '2025-01-13'), (14, 'MTR000014', '2025-01-14'), (15, 'MTR000015', '2025-01-15');
+
+-- 5. Meter_Readings (15 records)
+INSERT INTO Meter_Readings (meter_id, reading_date, units_consumed) VALUES
+(1, '2025-02-01', 100), (2, '2025-02-01', 120), (3, '2025-02-01', 90),
+(4, '2025-02-01', 110), (5, '2025-02-01', 130), (6, '2025-02-01', 95),
+(7, '2025-02-01', 115), (8, '2025-02-01', 125), (9, '2025-02-01', 105),
+(10, '2025-02-01', 135), (11, '2025-02-01', 85), (12, '2025-02-01', 140),
+(13, '2025-02-01', 150), (14, '2025-02-01', 80), (15, '2025-02-01', 145);
+
+-- 6. Tariff (15 records)
+INSERT INTO Tariff (category, rate) VALUES
+('Domestic Low', 0.10), ('Domestic Medium', 0.15), ('Domestic High', 0.20),
+('Commercial Low', 0.25), ('Commercial Medium', 0.30), ('Commercial High', 0.35),
+('Industrial Low', 0.40), ('Industrial Medium', 0.45), ('Industrial High', 0.50),
+('Rural Low', 0.08), ('Rural Medium', 0.12), ('Rural High', 0.18),
+('Special Low', 0.22), ('Special Medium', 0.28), ('Special High', 0.32);
+
+-- 7. Bills (15 records)
+INSERT INTO Bills (cust_id, account_id, amount, bill_date, due_date, status) VALUES
+(1, 1, 15.00, '2025-02-01', '2025-02-15', 'Pending'), (2, 2, 18.00, '2025-02-01', '2025-02-15', 'Pending'),
+(3, 3, 13.50, '2025-02-01', '2025-02-15', 'Pending'), (4, 4, 16.50, '2025-02-01', '2025-02-15', 'Pending'),
+(5, 5, 19.50, '2025-02-01', '2025-02-15', 'Pending'), (6, 6, 14.25, '2025-02-01', '2025-02-15', 'Pending'),
+(7, 7, 17.25, '2025-02-01', '2025-02-15', 'Pending'), (8, 8, 18.75, '2025-02-01', '2025-02-15', 'Pending'),
+(9, 9, 15.75, '2025-02-01', '2025-02-15', 'Pending'), (10, 10, 20.25, '2025-02-01', '2025-02-15', 'Pending'),
+(11, 11, 12.75, '2025-02-01', '2025-02-15', 'Pending'), (12, 12, 21.00, '2025-02-01', '2025-02-15', 'Pending'),
+(13, 13, 22.50, '2025-02-01', '2025-02-15', 'Pending'), (14, 14, 12.00, '2025-02-01', '2025-02-15', 'Pending'),
+(15, 15, 21.75, '2025-02-01', '2025-02-15', 'Pending');
+
+-- 8. Payments (15 records)
+INSERT INTO Payments (cust_id, bill_id, amount, payment_date) VALUES
+(1, 1, 15.00, '2025-02-10'), (2, 2, 18.00, '2025-02-11'), (3, 3, 13.50, '2025-02-12'),
+(4, 4, 16.50, '2025-02-13'), (5, 5, 19.50, '2025-02-14'), (6, 6, 14.25, '2025-02-15'),
+(7, 7, 17.25, '2025-02-16'), (8, 8, 18.75, '2025-02-17'), (9, 9, 15.75, '2025-02-18'),
+(10, 10, 20.25, '2025-02-19'), (11, 11, 12.75, '2025-02-20'), (12, 12, 21.00, '2025-02-21'),
+(13, 13, 22.50, '2025-02-22'), (14, 14, 12.00, '2025-02-23'), (15, 15, 21.75, '2025-02-24');
+
+-- 9. Payment_History (15 records, triggered by Payments)
+-- Note: This will auto-populate from the trigger; manually adding for completeness
+INSERT INTO Payment_History (payment_id, cust_id, amount, payment_date) VALUES
+(1, 1, 15.00, '2025-02-10'), (2, 2, 18.00, '2025-02-11'), (3, 3, 13.50, '2025-02-12'),
+(4, 4, 16.50, '2025-02-13'), (5, 5, 19.50, '2025-02-14'), (6, 6, 14.25, '2025-02-15'),
+(7, 7, 17.25, '2025-02-16'), (8, 8, 18.75, '2025-02-17'), (9, 9, 15.75, '2025-02-18'),
+(10, 10, 20.25, '2025-02-19'), (11, 11, 12.75, '2025-02-20'), (12, 12, 21.00, '2025-02-21'),
+(13, 13, 22.50, '2025-02-22'), (14, 14, 12.00, '2025-02-23'), (15, 15, 21.75, '2025-02-24');
+
+-- 10. Penalty (15 records)
+INSERT INTO Penalty (bill_id, penalty_amount, penalty_date) VALUES
+(1, 1.50, '2025-02-16'), (2, 1.80, '2025-02-16'), (3, 1.35, '2025-02-16'),
+(4, 1.65, '2025-02-16'), (5, 1.95, '2025-02-16'), (6, 1.43, '2025-02-16'),
+(7, 1.73, '2025-02-16'), (8, 1.88, '2025-02-16'), (9, 1.58, '2025-02-16'),
+(10, 2.03, '2025-02-16'), (11, 1.28, '2025-02-16'), (12, 2.10, '2025-02-16'),
+(13, 2.25, '2025-02-16'), (14, 1.20, '2025-02-16'), (15, 2.18, '2025-02-16');
+
+-- 11. Complaint (15 records)
+INSERT INTO Complaint (cust_id, complaint_text, complaint_date, status) VALUES
+(1, 'Power outage', '2025-02-01', 'Pending'), (2, 'High bill', '2025-02-02', 'Resolved'),
+(3, 'Meter issue', '2025-02-03', 'Pending'), (4, 'Billing error', '2025-02-04', 'Resolved'),
+(5, 'No supply', '2025-02-05', 'Pending'), (6, 'Overcharge', '2025-02-06', 'Resolved'),
+(7, 'Frequent outages', '2025-02-07', 'Pending'), (8, 'Meter reading error', '2025-02-08', 'Resolved'),
+(9, 'Service delay', '2025-02-09', 'Pending'), (10, 'Wrong bill', '2025-02-10', 'Resolved'),
+(11, 'Power surge', '2025-02-11', 'Pending'), (12, 'Billing dispute', '2025-02-12', 'Resolved'),
+(13, 'No response', '2025-02-13', 'Pending'), (14, 'Meter fault', '2025-02-14', 'Resolved'),
+(15, 'High rates', '2025-02-15', 'Pending');
+
+-- 12. Feedback (15 records)
+INSERT INTO Feedback (cust_id, feedback_text, feedback_date) VALUES
+(1, 'Good service', '2025-02-01'), (2, 'Slow response', '2025-02-02'),
+(3, 'Friendly staff', '2025-02-03'), (4, 'Needs improvement', '2025-02-04'),
+(5, 'Reliable power', '2025-02-05'), (6, 'Billing issues', '2025-02-06'),
+(7, 'Great support', '2025-02-07'), (8, 'Poor communication', '2025-02-08'),
+(9, 'Fast fixes', '2025-02-09'), (10, 'High costs', '2025-02-10'),
+(11, 'Excellent', '2025-02-11'), (12, 'Average service', '2025-02-12'),
+(13, 'Very good', '2025-02-13'), (14, 'Bad experience', '2025-02-14'),
+(15, 'Satisfactory', '2025-02-15');
+
+-- 13. Usage_History (15 records)
+INSERT INTO Usage_History (cust_id, meter_id, usage_date, units_consumed) VALUES
+(1, 1, '2025-02-01', 100), (2, 2, '2025-02-01', 120), (3, 3, '2025-02-01', 90),
+(4, 4, '2025-02-01', 110), (5, 5, '2025-02-01', 130), (6, 6, '2025-02-01', 95),
+(7, 7, '2025-02-01', 115), (8, 8, '2025-02-01', 125), (9, 9, '2025-02-01', 105),
+(10, 10, '2025-02-01', 135), (11, 11, '2025-02-01', 85), (12, 12, '2025-02-01', 140),
+(13, 13, '2025-02-01', 150), (14, 14, '2025-02-01', 80), (15, 15, '2025-02-01', 145);
+
+-- 14. Notification (15 records)
+INSERT INTO Notification (cust_id, message, notification_date, status) VALUES
+(1, 'Bill due soon', '2025-02-10', 'Pending'), (2, 'Payment received', '2025-02-11', 'Sent'),
+(3, 'Meter reading scheduled', '2025-02-12', 'Pending'), (4, 'Complaint resolved', '2025-02-13', 'Sent'),
+(5, 'Bill overdue', '2025-02-14', 'Pending'), (6, 'Payment confirmed', '2025-02-15', 'Sent'),
+(7, 'Outage alert', '2025-02-16', 'Pending'), (8, 'Feedback received', '2025-02-17', 'Sent'),
+(9, 'Service update', '2025-02-18', 'Pending'), (10, 'Bill issued', '2025-02-19', 'Sent'),
+(11, 'Maintenance notice', '2025-02-20', 'Pending'), (12, 'Payment reminder', '2025-02-21', 'Sent'),
+(13, 'New tariff rates', '2025-02-22', 'Pending'), (14, 'Support request', '2025-02-23', 'Sent'),
+(15, 'Penalty applied', '2025-02-24', 'Pending');
+
+-- 15. Invoice (15 records)
+INSERT INTO Invoice (bill_id, cust_id, amount_due, issue_date) VALUES
+(1, 1, 15.00, '2025-02-01'), (2, 2, 18.00, '2025-02-01'), (3, 3, 13.50, '2025-02-01'),
+(4, 4, 16.50, '2025-02-01'), (5, 5, 19.50, '2025-02-01'), (6, 6, 14.25, '2025-02-01'),
+(7, 7, 17.25, '2025-02-01'), (8, 8, 18.75, '2025-02-01'), (9, 9, 15.75, '2025-02-01'),
+(10, 10, 20.25, '2025-02-01'), (11, 11, 12.75, '2025-02-01'), (12, 12, 21.00, '2025-02-01'),
+(13, 13, 22.50, '2025-02-01'), (14, 14, 12.00, '2025-02-01'), (15, 15, 21.75, '2025-02-01');
+
+-- 16. Customer_Support (15 records)
+INSERT INTO Customer_Support (cust_id, issue_description, support_date, resolution_status) VALUES
+(1, 'Billing query', '2025-02-01', 'Open'), (2, 'Meter failure', '2025-02-02', 'Closed'),
+(3, 'Payment issue', '2025-02-03', 'Open'), (4, 'Service disruption', '2025-02-04', 'Closed'),
+(5, 'High bill complaint', '2025-02-05', 'Open'), (6, 'Support delay', '2025-02-06', 'Closed'),
+(7, 'Outage report', '2025-02-07', 'Open'), (8, 'Billing error', '2025-02-08', 'Closed'),
+(9, 'Meter reading dispute', '2025-02-09', 'Open'), (10, 'Payment not updated', '2025-02-10', 'Closed'),
+(11, 'Service request', '2025-02-11', 'Open'), (12, 'Penalty query', '2025-02-12', 'Closed'),
+(13, 'Tariff question', '2025-02-13', 'Open'), (14, 'Outage follow-up', '2025-02-14', 'Closed'),
+(15, 'General inquiry', '2025-02-15', 'Open');
+
+
+
+
