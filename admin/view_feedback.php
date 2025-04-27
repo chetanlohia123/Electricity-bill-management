@@ -7,10 +7,11 @@ if (!isset($_SESSION['admin_id'])) {
 include('../includes/db_connection.php');
 include('../includes/header.php');
 
-$stmt = $conn->prepare("SELECT f.feedback_id, c.cust_name, f.feedback_text, f.feedback_date 
-                        FROM Feedback f 
-                        JOIN Customer c ON f.cust_id = c.cust_id 
-                        ORDER BY f.feedback_date DESC");
+$stmt = $conn->prepare("SELECT ci.interaction_id, c.cust_name, ci.description, ci.interaction_date 
+                        FROM Customer_Interaction ci 
+                        JOIN Customer c ON ci.cust_id = c.cust_id 
+                        WHERE ci.interaction_type = 'Feedback'
+                        ORDER BY ci.interaction_date DESC");
 $stmt->execute();
 $result = $stmt->get_result();
 ?>
@@ -21,10 +22,10 @@ $result = $stmt->get_result();
             <tr><th>Feedback ID</th><th>Customer</th><th>Feedback</th><th>Date</th></tr>
             <?php while ($row = $result->fetch_assoc()): ?>
                 <tr>
-                    <td><?php echo $row['feedback_id']; ?></td>
+                    <td><?php echo $row['interaction_id']; ?></td>
                     <td><?php echo htmlspecialchars($row['cust_name']); ?></td>
-                    <td><?php echo htmlspecialchars($row['feedback_text']); ?></td>
-                    <td><?php echo $row['feedback_date']; ?></td>
+                    <td><?php echo htmlspecialchars($row['description']); ?></td>
+                    <td><?php echo $row['interaction_date']; ?></td>
                 </tr>
             <?php endwhile; ?>
         </table>

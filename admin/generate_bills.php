@@ -1,91 +1,164 @@
 <?php
 session_start();
 if (!isset($_SESSION['admin_id'])) {
-    header("Location: ../index.php");
+    header("Location: ../login.php");
     exit();
 }
+
 include('../includes/db_connection.php');
 include('../includes/header.php');
 
-$success_message = isset($_SESSION['success_message']) ? $_SESSION['success_message'] : null;
-unset($_SESSION['success_message']);
-
+date_default_timezone_set('UTC');
+$success_message = null;
+$error_message = null;
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['generate'])) {
-    $stmt = $conn->prepare("
-        SELECT DISTINCT c.cust_id, a.account_id, m.meter_id, mr.units_consumed, t.rate
-        FROM Customer c
+    $today = date('Y-m-d');
+    $due_date = date('Y-m-d', strtotime('+14 days'));
+
+    // Fetch only readings which are still pending
+    $query = "
+        SELECT mr.reading_id, a.account_id, mr.units_consumed, t.rate
+        FROM Meter_Readings mr
+        JOIN Meter m ON mr.meter_id = m.meter_id
+        JOIN Customer c ON m.cust_id = c.cust_id
         JOIN Account a ON c.cust_id = a.cust_id
-        JOIN Meter m ON c.cust_id = m.cust_id
-        JOIN Meter_Readings mr ON m.meter_id = mr.meter_id
         JOIN Tariff t ON t.tariff_id = 1
-        LEFT JOIN Bills b ON b.cust_id = c.cust_id AND b.bill_date = mr.reading_date
-        WHERE b.bill_id IS NULL
-    ");
-    $stmt->execute();
-    $result = $stmt->get_result();
+        WHERE mr.billing_status = 'Pending'
+    ";
 
-    while ($row = $result->fetch_assoc()) {
-        $cust_id = $row['cust_id'];
-        $account_id = $row['account_id'];
-        $amount = $row['units_consumed'] * $row['rate'];
-        $bill_date = date('Y-m-d');
-        $due_date = date('Y-m-d', strtotime('+14 days'));
+    $stmt = $conn->prepare($query);
 
-        $stmt = $conn->prepare("INSERT INTO Bills (cust_id, account_id, amount, bill_date, due_date, status) 
-                                VALUES (?, ?, ?, ?, ?, 'Pending')");
-        $stmt->bind_param("iidds", $cust_id, $account_id, $amount, $bill_date, $due_date);
-        $stmt->execute();
-        $bill_id = $conn->insert_id;
+    if (!$stmt) {
+        $error_message = "Prepare failed: " . $conn->error;
+    } elseif (!$stmt->execute()) {
+        $error_message = "Failed to fetch meter readings: " . $stmt->error;
+    } else {
+        $result = $stmt->get_result();
+        $bills_generated = 0;
 
-        $message = "New bill (ID: $bill_id) issued for $$amount, due on $due_date.";
-        $stmt = $conn->prepare("INSERT INTO Notification (cust_id, message, notification_date, status) 
-                                VALUES (?, ?, ?, 'Pending')");
-        $stmt->bind_param("iss", $cust_id, $message, $bill_date);
-        $stmt->execute();
+        while ($row = $result->fetch_assoc()) {
+            $reading_id = $row['reading_id'];
+            $account_id = $row['account_id'];
+            $units_consumed = $row['units_consumed'];
+            $rate = $row['rate'];
+            $amount = (float)($units_consumed * $rate);
+
+            // Insert a new bill
+            $insert_stmt = $conn->prepare("INSERT INTO Bills (account_id, amount, bill_date, due_date, status) VALUES (?, ?, ?, ?, 'Pending')");
+            $insert_stmt->bind_param('idss', $account_id, $amount, $today, $due_date);
+
+            if ($insert_stmt->execute()) {
+                $bills_generated++;
+
+                // After bill inserted, mark this reading as 'Billed'
+                $update_stmt = $conn->prepare("UPDATE Meter_Readings SET billing_status = 'Billed' WHERE reading_id = ?");
+                $update_stmt->bind_param('i', $reading_id);
+                $update_stmt->execute();
+                $update_stmt->close();
+            } else {
+                $error_message = "Failed to insert bill: " . $insert_stmt->error;
+                break;
+            }
+
+            $insert_stmt->close();
+        }
+
+        if ($bills_generated > 0) {
+            $_SESSION['success_message'] = "$bills_generated bills generated successfully!";
+        } else {
+            $_SESSION['error_message'] = "No new bills generated.";
+        }
     }
-    $_SESSION['success_message'] = "Bills generated successfully!";
+    if ($stmt) {
+        $stmt->close();
+    }
+
     header("Location: generate_bills.php");
     exit();
 }
 
-$stmt = $conn->prepare("SELECT COUNT(*) AS pending_readings 
-                        FROM Meter_Readings mr 
-                        LEFT JOIN Bills b ON b.bill_date = mr.reading_date AND b.cust_id = (
-                            SELECT cust_id FROM Meter m WHERE m.meter_id = mr.meter_id
-                        )
-                        WHERE b.bill_id IS NULL");
-$stmt->execute();
-$pending = $stmt->get_result()->fetch_assoc()['pending_readings'];
+// After refresh
+if (isset($_SESSION['success_message'])) {
+    $success_message = $_SESSION['success_message'];
+    unset($_SESSION['success_message']);
+}
+if (isset($_SESSION['error_message'])) {
+    $error_message = $_SESSION['error_message'];
+    unset($_SESSION['error_message']);
+}
+
+// Fetch total pending readings again
+$count_stmt = $conn->prepare("
+    SELECT COUNT(*) AS pending
+    FROM Meter_Readings mr
+    JOIN Meter m ON mr.meter_id = m.meter_id
+    JOIN Customer c ON m.cust_id = c.cust_id
+    JOIN Account a ON c.cust_id = a.cust_id
+");
+$count_stmt->execute();
+$pending = $count_stmt->get_result()->fetch_assoc()['pending'] ?? 0;
+$count_stmt->close();
 ?>
+
 <div class="container">
+    <div class="header-bar">
+        <a href="javascript:history.back()" class="back-btn">Back</a>
+    </div>
+
     <h1>Generate Bills</h1>
-    <?php if ($success_message): ?><p class="success"><?= $success_message ?></p><?php endif; ?>
-    <p>Pending Meter Readings to Bill: <?php echo $pending; ?></p>
-    <form method="post">
-        <button type="submit" name="generate">Generate Bills</button>
-    </form>
+
+    <?php if ($success_message): ?>
+        <p class="success"><?php echo htmlspecialchars($success_message); ?></p>
+    <?php endif; ?>
+
+    <?php if ($error_message): ?>
+        <p class="error"><?php echo htmlspecialchars($error_message); ?></p>
+    <?php endif; ?>
+
+    <div class="card">
+        <p>Pending Readings to Bill: <?php echo htmlspecialchars($pending); ?></p>
+        <form method="post">
+            <button type="submit" name="generate">Generate Bills</button>
+        </form>
+    </div>
+
     <h2>Recent Bills</h2>
-    <?php
-    $stmt = $conn->prepare("SELECT b.bill_id, c.cust_name, b.amount, b.bill_date, b.due_date 
-                            FROM Bills b 
-                            JOIN Customer c ON b.cust_id = c.cust_id 
-                            ORDER BY b.bill_date DESC LIMIT 15");
-    $stmt->execute();
-    $result = $stmt->get_result();
-    ?>
-    <table>
-        <tr><th>Bill ID</th><th>Customer</th><th>Amount</th><th>Bill Date</th><th>Due Date</th></tr>
-        <?php while ($row = $result->fetch_assoc()): ?>
+    <div class="card">
+        <?php
+        $recent_stmt = $conn->prepare("
+           SELECT b.bill_id, c.cust_name, b.amount, b.bill_date, b.due_date
+FROM Bills b
+JOIN Account a ON b.account_id = a.account_id
+JOIN Customer c ON a.cust_id = c.cust_id
+ORDER BY b.bill_id DESC
+LIMIT 15
+        ");
+        $recent_stmt->execute();
+        $result = $recent_stmt->get_result();
+        ?>
+
+        <table>
             <tr>
-                <td><?php echo $row['bill_id']; ?></td>
-                <td><?php echo $row['cust_name']; ?></td>
-                <td>$<?php echo $row['amount']; ?></td>
-                <td><?php echo $row['bill_date']; ?></td>
-                <td><?php echo $row['due_date']; ?></td>
+                <th>Bill ID</th>
+                <th>Customer</th>
+                <th>Amount</th>
+                <th>Bill Date</th>
+                <th>Due Date</th>
             </tr>
-        <?php endwhile; ?>
-    </table>
+            <?php while ($row = $result->fetch_assoc()): ?>
+                <tr>
+                    <td><?php echo htmlspecialchars($row['bill_id']); ?></td>
+                    <td><?php echo htmlspecialchars($row['cust_name']); ?></td>
+                    <td>$<?php echo number_format($row['amount'], 2); ?></td>
+                    <td><?php echo htmlspecialchars($row['bill_date']); ?></td>
+                    <td><?php echo htmlspecialchars($row['due_date']); ?></td>
+                </tr>
+            <?php endwhile; ?>
+        </table>
+
+        <?php $recent_stmt->close(); ?>
+    </div>
 </div>
-<link rel="stylesheet" href="css/styles.css">
 
 <?php include('../includes/footer.php'); ?>
+<?php if ($conn) { $conn->close(); } ?>

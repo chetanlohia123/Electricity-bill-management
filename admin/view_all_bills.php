@@ -9,7 +9,9 @@ include('../includes/header.php');
 
 $stmt = $conn->prepare("SELECT b.bill_id, c.cust_name, b.amount, b.bill_date, b.due_date, b.status 
                         FROM Bills b 
-                        JOIN Customer c ON b.cust_id = c.cust_id");
+                        JOIN Account a ON b.account_id = a.account_id
+                        JOIN Customer c ON a.cust_id = c.cust_id
+                        ORDER BY b.bill_id DESC");
 $stmt->execute();
 $result = $stmt->get_result();
 ?>
@@ -29,6 +31,5 @@ $result = $stmt->get_result();
         <?php endwhile; ?>
     </table>
 </div>
-<link rel="stylesheet" href="css/styles.css">
-
+<link rel="stylesheet" href="../css/styles.css">
 <?php include('../includes/footer.php'); ?>

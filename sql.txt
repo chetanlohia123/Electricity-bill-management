@@ -193,6 +193,22 @@ SET FOREIGN_KEY_CHECKS = 1;
 INSERT INTO Tariff (category, rate) VALUES ('Domestic', 0.15);
 
 
+DELIMITER //
+CREATE PROCEDURE example_cursor()
+BEGIN
+    DECLARE done INT DEFAULT 0;
+    DECLARE curr_cust_id INT;
+    DECLARE cur CURSOR FOR SELECT cust_id FROM Customer;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+    OPEN cur;
+    read_loop: LOOP
+        FETCH cur INTO curr_cust_id;
+        IF done THEN LEAVE read_loop; END IF;
+        -- Do something with curr_cust_id
+    END LOOP;
+    CLOSE cur;
+END //
+DELIMITER ;
 
 -- Use the database
 USE electricity_bill_system;
@@ -364,3 +380,151 @@ INSERT INTO Customer_Support (cust_id, issue_description, support_date, resoluti
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- Step 1: Create Address Table
+CREATE TABLE Address (
+    address_id INT AUTO_INCREMENT PRIMARY KEY,
+    street VARCHAR(255) NOT NULL,
+    city VARCHAR(100) NOT NULL,
+    zip_code VARCHAR(20) NOT NULL
+);
+
+-- Step 2: Populate Address Table from Customer
+INSERT INTO Address (street, city, zip_code)
+SELECT DISTINCT address, '' AS city, '' AS zip_code
+FROM Customer;
+
+-- Step 3: Add address_id to Customer
+ALTER TABLE Customer
+ADD address_id INT NOT NULL;
+
+-- Step 4: Update Customer.address_id
+UPDATE Customer c
+JOIN Address a ON c.address = a.street
+SET c.address_id = a.address_id;
+
+-- Step 5: Drop Customer.address
+ALTER TABLE Customer
+DROP COLUMN address,
+ADD FOREIGN KEY (address_id) REFERENCES Address(address_id);
+
+-- Step 6: Merge Invoice into Bills (assuming Invoice data is redundant)
+-- Transfer any unique Invoice data if needed (here, none based on sample)
+ALTER TABLE Bills
+ADD COLUMN issue_date DATE NOT NULL DEFAULT '0000-00-00';
+
+UPDATE Bills b
+JOIN Invoice i ON b.bill_id = i.bill_id
+SET b.issue_date = i.issue_date;
+
+-- Step 7: Drop Invoice Table
+DROP TABLE Invoice;
+
+-- Step 8: Remove cust_id from Bills
+ALTER TABLE Bills
+DROP FOREIGN KEY bills_ibfk_1,
+DROP COLUMN cust_id;
+
+-- Step 9: Make Bills.account_id NOT NULL
+ALTER TABLE Bills
+MODIFY COLUMN account_id INT NOT NULL,
+ADD UNIQUE (account_id, bill_date);
+
+-- Step 10: Remove cust_id from Payments
+ALTER TABLE Payments
+DROP FOREIGN KEY payments_ibfk_1,
+DROP COLUMN cust_id;
+
+-- Step 11: Make Payments.bill_id NOT NULL
+ALTER TABLE Payments
+MODIFY COLUMN bill_id INT NOT NULL;
+
+-- Step 12: Simplify Payment_History
+ALTER TABLE Payment_History
+DROP FOREIGN KEY payment_history_ibfk_1,
+DROP COLUMN cust_id,
+DROP COLUMN amount,
+DROP COLUMN payment_date,
+ADD COLUMN log_date DATE NOT NULL;
+
+-- Step 13: Populate Payment_History.log_date (use current date as placeholder)
+UPDATE Payment_History
+SET log_date = CURDATE();
+
+-- Step 14: Merge Usage_History into Meter_Readings
+INSERT INTO Meter_Readings (meter_id, reading_date, units_consumed)
+SELECT meter_id, usage_date, units_consumed
+FROM Usage_History;
+
+-- Step 15: Drop Usage_History
+DROP TABLE Usage_History;
+
+-- Step 16: Create Customer_Interaction Table
+CREATE TABLE Customer_Interaction (
+    interaction_id INT AUTO_INCREMENT PRIMARY KEY,
+    cust_id INT NOT NULL,
+    interaction_type ENUM('Complaint','Support','Feedback') NOT NULL,
+    description TEXT NOT NULL,
+    interaction_date DATE NOT NULL,
+    status ENUM('Pending','Resolved','Open','Closed') NOT NULL,
+    FOREIGN KEY (cust_id) REFERENCES Customer(cust_id)
+);
+
+-- Step 17: Migrate Complaint Data
+INSERT INTO Customer_Interaction (cust_id, interaction_type, description, interaction_date, status)
+SELECT cust_id, 'Complaint' AS interaction_type, complaint_text, complaint_date, status
+FROM Complaint;
+
+-- Step 18: Migrate Customer_Support Data
+INSERT INTO Customer_Interaction (cust_id, interaction_type, description, interaction_date, status)
+SELECT cust_id, 'Support' AS interaction_type, issue_description, support_date, resolution_status
+FROM Customer_Support;
+
+-- Step 19: Migrate Feedback Data
+INSERT INTO Customer_Interaction (cust_id, interaction_type, description, interaction_date, status)
+SELECT cust_id, 'Feedback' AS interaction_type, feedback_text, feedback_date, 'Resolved' AS status
+FROM Feedback;
+
+-- Step 20: Drop Old Interaction Tables
+DROP TABLE Complaint;
+DROP TABLE Customer_Support;
+DROP TABLE Feedback;
+
+-- Step 21: Update customer_bill_summary View
+DROP VIEW customer_bill_summary;
+CREATE VIEW customer_bill_summary AS
+SELECT 
+    c.cust_id,
+    c.cust_name,
+    COUNT(b.bill_id) AS total_bills,
+    SUM(b.amount) AS total_amount,
+    SUM(CASE WHEN b.status = 'Pending' THEN b.amount ELSE 0 END) AS pending_amount
+FROM 
+    Customer c
+    LEFT JOIN Account a ON c.cust_id = a.cust_id
+    LEFT JOIN Bills b ON a.account_id = b.account_id
+GROUP BY 
+    c.cust_id, c.cust_name;
+
+    ALTER TABLE Bills MODIFY bill_date DATE;
+
+    ALTER TABLE Bills DROP FOREIGN KEY bills_ibfk_2;
+    ALTER TABLE Bills DROP INDEX account_id;
+    ALTER TABLE Bills ADD CONSTRAINT bills_ibfk_2 FOREIGN KEY (account_id) REFERENCES Account(account_id);
+    ALTER TABLE Meter_Readings ADD COLUMN billing_status ENUM('Pending', 'Billed') DEFAULT 'Pending';

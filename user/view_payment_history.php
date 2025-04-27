@@ -7,7 +7,11 @@ if (!isset($_SESSION['cust_id'])) {
 }
 $cust_id = $_SESSION['cust_id'];
 
-$stmt = $conn->prepare("SELECT payment_id, bill_id, amount, payment_date FROM Payments WHERE cust_id = ?");
+$stmt = $conn->prepare("SELECT p.payment_id, p.bill_id, p.amount, p.payment_date 
+                        FROM Payments p 
+                        JOIN Bills b ON p.bill_id = b.bill_id 
+                        JOIN Account a ON b.account_id = a.account_id 
+                        WHERE a.cust_id = ?");
 $stmt->bind_param("i", $cust_id);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -17,8 +21,7 @@ $result = $stmt->get_result();
 <head>
     <meta charset="UTF-8">
     <title>Payment History</title>
-    <link rel="stylesheet" href="css/styles.css">
-
+    <link rel="stylesheet" href="../css/styles.css">
 </head>
 <body>
     <?php include('../includes/header.php'); ?>

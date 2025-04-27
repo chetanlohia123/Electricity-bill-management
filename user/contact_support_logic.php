@@ -7,9 +7,10 @@ if (!isset($_SESSION['cust_id'])) {
 }
 $cust_id = $_SESSION['cust_id'];
 $issue_description = $_POST['issue_description'];
+$interaction_type = 'Support';
 
-$stmt = $conn->prepare("INSERT INTO Customer_Support (cust_id, issue_description, support_date) VALUES (?, ?, CURDATE())");
-$stmt->bind_param("is", $cust_id, $issue_description);
+$stmt = $conn->prepare("INSERT INTO Customer_Interaction (cust_id, interaction_type, description, interaction_date, status) VALUES (?, ?, ?, CURDATE(), 'Open')");
+$stmt->bind_param("iss", $cust_id, $interaction_type, $issue_description);
 if ($stmt->execute()) {
     $_SESSION['success_message'] = "Support request submitted!";
 }

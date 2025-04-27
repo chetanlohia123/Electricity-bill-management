@@ -14,7 +14,9 @@ unset($_SESSION['error_message']);
 
 $bill_details = null;
 if ($bill_id > 0) {
-    $stmt = $conn->prepare("SELECT b.*, a.account_number FROM Bills b JOIN Account a ON b.account_id = a.account_id WHERE b.bill_id = ? AND b.cust_id = ? AND b.status = 'Pending'");
+    $stmt = $conn->prepare("SELECT b.*, a.account_number FROM Bills b 
+                            JOIN Account a ON b.account_id = a.account_id 
+                            WHERE b.bill_id = ? AND a.cust_id = ? AND b.status = 'Pending'");
     $stmt->bind_param("ii", $bill_id, $cust_id);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -28,7 +30,12 @@ if ($bill_id > 0) {
 <head>
     <meta charset="UTF-8">
     <title>Pay Bill</title>
-    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        .container { max-width: 600px; margin: 20px auto; padding: 20px; }
+        .success { color: green; } .error { color: red; }
+        form { margin: 20px 0; }
+        button { background: #4CAF50; color: white; padding: 10px; border: none; }
+    </style>
 </head>
 <body>
     <?php include('../includes/header.php'); ?>
@@ -37,8 +44,8 @@ if ($bill_id > 0) {
         <?php if ($success_message): ?><p class="success"><?= $success_message ?></p><?php endif; ?>
         <?php if ($error_message): ?><p class="error"><?= $error_message ?></p><?php endif; ?>
         <form action="pay_bill.php" method="get">
-            <label for="bill_id">Enter Bill ID:</label>
-            <input type="number" id="bill_id" name="bill_id" required>
+            <label>Enter Bill ID:</label>
+            <input type="number" name="bill_id" required>
             <button type="submit">Check Bill</button>
         </form>
         <?php if ($bill_details): ?>

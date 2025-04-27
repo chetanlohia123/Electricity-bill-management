@@ -8,7 +8,10 @@ if (!isset($_SESSION['cust_id'])) {
 $cust_id = $_SESSION['cust_id'];
 $bill_id = intval($_POST['bill_id']);
 
-$stmt = $conn->prepare("SELECT * FROM Bills WHERE bill_id = ? AND cust_id = ? AND status = 'Pending'");
+// Check bill via Account
+$stmt = $conn->prepare("SELECT b.* FROM Bills b 
+                        JOIN Account a ON b.account_id = a.account_id 
+                        WHERE b.bill_id = ? AND a.cust_id = ? AND b.status = 'Pending'");
 $stmt->bind_param("ii", $bill_id, $cust_id);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -17,18 +20,15 @@ if ($result->num_rows > 0) {
     $bill = $result->fetch_assoc();
     $amount = $bill['amount'];
 
-    $stmt = $conn->prepare("INSERT INTO Payments (cust_id, bill_id, amount, payment_date) VALUES (?, ?, ?, CURDATE())");
-    $stmt->bind_param("iid", $cust_id, $bill_id, $amount);
+    // Insert payment without cust_id
+    $stmt = $conn->prepare("INSERT INTO Payments (bill_id, amount, payment_date) VALUES (?, ?, CURDATE())");
+    $stmt->bind_param("id", $bill_id, $amount);
     if ($stmt->execute()) {
         $stmt = $conn->prepare("UPDATE Bills SET status = 'Paid' WHERE bill_id = ?");
         $stmt->bind_param("i", $bill_id);
         $stmt->execute();
 
-        $stmt = $conn->prepare("INSERT INTO Invoice (bill_id, cust_id, amount_due, issue_date) VALUES (?, ?, ?, CURDATE())");
-        $stmt->bind_param("iid", $bill_id, $cust_id, $amount);
-        $stmt->execute();
-
-        $_SESSION['success_message'] = "Payment successful! Invoice generated.";
+        $_SESSION['success_message'] = "Payment successful!";
     } else {
         $_SESSION['error_message'] = "Payment failed: " . $conn->error;
     }

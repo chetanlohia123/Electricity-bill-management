@@ -7,15 +7,18 @@ if (!isset($_SESSION['admin_id'])) {
 include('../includes/db_connection.php');
 include('../includes/header.php');
 
+// Count total customers
 $stmt = $conn->prepare("SELECT COUNT(*) AS customers FROM Customer");
 $stmt->execute();
 $customers = $stmt->get_result()->fetch_assoc()['customers'];
 
+// Count pending bills
 $stmt = $conn->prepare("SELECT COUNT(*) AS pending_bills FROM Bills WHERE status = 'Pending'");
 $stmt->execute();
 $pending_bills = $stmt->get_result()->fetch_assoc()['pending_bills'];
 
-$stmt = $conn->prepare("SELECT COUNT(*) AS complaints FROM Complaint WHERE status = 'Pending'");
+// Count pending complaints (updated for Customer_Interaction)
+$stmt = $conn->prepare("SELECT COUNT(*) AS complaints FROM Customer_Interaction WHERE interaction_type = 'Complaint' AND status = 'Pending'");
 $stmt->execute();
 $complaints = $stmt->get_result()->fetch_assoc()['complaints'];
 ?>

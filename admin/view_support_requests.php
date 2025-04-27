@@ -11,19 +11,20 @@ $success_message = isset($_SESSION['success_message']) ? $_SESSION['success_mess
 unset($_SESSION['success_message']);
 
 if (isset($_POST['resolve'])) {
-    $support_id = intval($_POST['support_id']);
-    $stmt = $conn->prepare("UPDATE Customer_Support SET resolution_status = 'Closed' WHERE support_id = ?");
-    $stmt->bind_param("i", $support_id);
+    $interaction_id = intval($_POST['interaction_id']);
+    $stmt = $conn->prepare("UPDATE Customer_Interaction SET status = 'Closed' WHERE interaction_id = ? AND interaction_type = 'Support'");
+    $stmt->bind_param("i", $interaction_id);
     $stmt->execute();
     $_SESSION['success_message'] = "Support request resolved successfully!";
     header("Location: view_support_requests.php");
     exit();
 }
 
-$stmt = $conn->prepare("SELECT cs.support_id, c.cust_name, cs.issue_description, cs.support_date, cs.resolution_status 
-                        FROM Customer_Support cs 
-                        JOIN Customer c ON cs.cust_id = c.cust_id 
-                        ORDER BY cs.support_date DESC");
+$stmt = $conn->prepare("SELECT ci.interaction_id, c.cust_name, ci.description, ci.interaction_date, ci.status 
+                        FROM Customer_Interaction ci 
+                        JOIN Customer c ON ci.cust_id = c.cust_id 
+                        WHERE ci.interaction_type = 'Support'
+                        ORDER BY ci.interaction_date DESC");
 $stmt->execute();
 $result = $stmt->get_result();
 ?>
@@ -35,15 +36,15 @@ $result = $stmt->get_result();
             <tr><th>ID</th><th>Customer</th><th>Issue</th><th>Date</th><th>Status</th><th>Action</th></tr>
             <?php while ($row = $result->fetch_assoc()): ?>
                 <tr>
-                    <td><?php echo $row['support_id']; ?></td>
+                    <td><?php echo $row['interaction_id']; ?></td>
                     <td><?php echo htmlspecialchars($row['cust_name']); ?></td>
-                    <td><?php echo htmlspecialchars($row['issue_description']); ?></td>
-                    <td><?php echo $row['support_date']; ?></td>
-                    <td><?php echo $row['resolution_status']; ?></td>
+                    <td><?php echo htmlspecialchars($row['description']); ?></td>
+                    <td><?php echo $row['interaction_date']; ?></td>
+                    <td><?php echo $row['status']; ?></td>
                     <td>
-                        <?php if ($row['resolution_status'] == 'Open'): ?>
+                        <?php if ($row['status'] == 'Open'): ?>
                             <form method="post">
-                                <input type="hidden" name="support_id" value="<?php echo $row['support_id']; ?>">
+                                <input type="hidden" name="interaction_id" value="<?php echo $row['interaction_id']; ?>">
                                 <button type="submit" name="resolve">Resolve</button>
                             </form>
                         <?php endif; ?>

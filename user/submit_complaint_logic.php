@@ -7,9 +7,10 @@ if (!isset($_SESSION['cust_id'])) {
 }
 $cust_id = $_SESSION['cust_id'];
 $complaint_text = $_POST['complaint_text'];
+$interaction_type = 'Complaint';
 
-$stmt = $conn->prepare("INSERT INTO Complaint (cust_id, complaint_text, complaint_date) VALUES (?, ?, CURDATE())");
-$stmt->bind_param("is", $cust_id, $complaint_text);
+$stmt = $conn->prepare("INSERT INTO Customer_Interaction (cust_id, interaction_type, description, interaction_date, status) VALUES (?, ?, ?, CURDATE(), 'Pending')");
+$stmt->bind_param("iss", $cust_id, $interaction_type, $complaint_text);
 if ($stmt->execute()) {
     $stmt = $conn->prepare("INSERT INTO Notification (cust_id, message, notification_date) VALUES (?, ?, CURDATE())");
     $message = "New complaint submitted.";

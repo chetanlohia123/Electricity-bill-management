@@ -1,38 +1,42 @@
-electricity_bill_system/
-│
-├── **admin/**
-│   ├── admin_dashboard.php          # Admin dashboard page
-│   ├── manage_customers.php         # Manage customers (view, edit, delete)
-│   ├── add_customer.php             # Add a new customer
-│   ├── edit_customer.php            # Edit customer details
-│   ├── delete_customer.php          # Delete a customer
-│   ├── manage_meters.php            # Manage meters (add, edit, delete)
-│   ├── generate_bills.php           # Generate bills for customers
-│   ├── view_payments.php            # View payment records
-│   └── view_feedback.php            # View customer feedback
-│
-├── **user/**
-│   ├── user_dashboard.php           # User dashboard page
-│   ├── view_bills.php               # View bills and payment history
-│   ├── pay_bill.php                 # Pay bills (integrate payment gateway)
-│   ├── view_usage.php               # View electricity usage
-│   └── submit_feedback.php          # Submit feedback
-│
-├── **includes/**
-│   ├── db_connection.php            # Database connection file
-│   ├── header.php                   # Common header for all pages
-│   ├── footer.php                   # Common footer for all pages
-│   └── functions.php                # Common functions (e.g., bill calculation)
-│
-├── **css/**
-│   └── styles.css                   # Global CSS file for styling
-│
-├── **js/**
-│   └── scripts.js                   # Global JavaScript file for interactivity
-│
-├── **index.php**                     # Homepage (Login page for admin and user)
-├── **login.php**                     # Login logic (admin and user)
-├── **register.php**                  # Registration page (admin and user)
-├── **register_logic.php**            # Registration logic
-├── **logout.php**                    # Logout logic
-└── **README.md**                     # Project documentation
+ELECTRICITY/
+├── admin/
+│   ├── admin_dashboard.php
+│   ├── generate_bills.php
+│   ├── manage_complaints.php
+│   ├── manage_customers.php
+│   ├── manage_meter_readings.php
+│   ├── manage_tariffs.php
+│   ├── view_all_bills.php
+│   ├── view_all_payments.php
+│   └── view_feedback.php
+│   └── view_support_requests.php
+├── css/
+│   └── styles.css
+├── includes/
+│   ├── db_connection.php
+│   ├── footer.php
+│   └── header.php
+├── js/
+│   └── scripts.js
+├── user/
+│   ├── contact_support_logic.php
+│   ├── contact_support.php
+│   ├── pay_bill_logic.php
+│   ├── pay_bill.php
+│   ├── submit_complaint_logic.php
+│   ├── submit_complaint.php
+│   ├── submit_feedback_logic.php
+│   ├── submit_feedback.php
+│   ├── user_dashboard.php
+│   ├── view_bills.php
+│   ├── view_payment_history.php
+│   └── view_usage_history.php
+├── Electricity system report.docx
+├── index.php
+├── login.php
+├── logout.php
+├── README.md
+├── register_logic.php
+├── register.php
+├── sql.txt
+└── str.txt

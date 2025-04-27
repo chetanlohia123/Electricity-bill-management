@@ -18,10 +18,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_reading'])) {
     $stmt = $conn->prepare("INSERT INTO Meter_Readings (meter_id, reading_date, units_consumed) VALUES (?, ?, ?)");
     $stmt->bind_param("isi", $meter_id, $reading_date, $units_consumed);
     if ($stmt->execute()) {
-        $stmt = $conn->prepare("INSERT INTO Usage_History (cust_id, meter_id, usage_date, units_consumed) 
-                                SELECT cust_id, ?, ?, ? FROM Meter WHERE meter_id = ?");
-        $stmt->bind_param("isii", $meter_id, $reading_date, $units_consumed, $meter_id);
-        $stmt->execute();
         $_SESSION['success_message'] = "Meter reading added successfully!";
     }
     header("Location: manage_meter_readings.php");

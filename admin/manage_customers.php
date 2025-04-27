@@ -27,6 +27,5 @@ $result = $stmt->get_result();
         <?php endwhile; ?>
     </table>
 </div>
-<link rel="stylesheet" href="css/styles.css">
-
+<link rel="stylesheet" href="../css/styles.css">
 <?php include('../includes/footer.php'); ?>

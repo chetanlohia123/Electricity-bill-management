@@ -7,10 +7,10 @@ if (!isset($_SESSION['cust_id'])) {
 }
 $cust_id = $_SESSION['cust_id'];
 
-$stmt = $conn->prepare("SELECT u.usage_id, u.usage_date, u.units_consumed, m.meter_number 
-                        FROM Usage_History u 
-                        JOIN Meter m ON u.meter_id = m.meter_id 
-                        WHERE u.cust_id = ?");
+$stmt = $conn->prepare("SELECT mr.reading_id AS usage_id, mr.reading_date AS usage_date, mr.units_consumed, m.meter_number 
+                        FROM Meter_Readings mr 
+                        JOIN Meter m ON mr.meter_id = m.meter_id 
+                        WHERE m.cust_id = ?");
 $stmt->bind_param("i", $cust_id);
 $stmt->execute();
 $result = $stmt->get_result();

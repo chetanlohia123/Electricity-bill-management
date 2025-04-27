@@ -5,9 +5,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $name = $_POST['name'];
     $email = $_POST['email'];
     $password = $_POST['password'];
-    $address = $_POST['address'];
+    $address = $_POST['address']; // Assuming address is a simple string
     $role = $_POST['role'];
 
+    // Check if email already exists
     $stmt = $conn->prepare("SELECT cust_id FROM Customer WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
@@ -22,11 +23,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->bind_param("ss", $email, $password);
         $stmt->execute();
     } else {
-        $stmt = $conn->prepare("INSERT INTO Customer (cust_name, email, password, address) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("ssss", $name, $email, $password, $address);
+        // Insert into Address table first
+        $stmt = $conn->prepare("INSERT INTO Address (street) VALUES (?)");
+        $stmt->bind_param("s", $address);
+        $stmt->execute();
+        $address_id = $conn->insert_id;
+
+        // Insert into Customer with address_id
+        $stmt = $conn->prepare("INSERT INTO Customer (cust_name, address_id, email, password) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("siss", $name, $address_id, $email, $password);
         $stmt->execute();
         $cust_id = $conn->insert_id;
 
+        // Create Account and Meter entries (unchanged)
         $account_number = "ACC" . str_pad($cust_id, 6, "0", STR_PAD_LEFT);
         $stmt = $conn->prepare("INSERT INTO Account (cust_id, account_number) VALUES (?, ?)");
         $stmt->bind_param("is", $cust_id, $account_number);

@@ -9,8 +9,9 @@ $cust_id = $_SESSION['cust_id'];
 
 $stmt = $conn->prepare("SELECT b.bill_id, b.amount, b.bill_date, b.due_date, b.status, p.payment_date 
                         FROM Bills b 
+                        JOIN Account a ON b.account_id = a.account_id 
                         LEFT JOIN Payments p ON b.bill_id = p.bill_id 
-                        WHERE b.cust_id = ?");
+                        WHERE a.cust_id = ?");
 $stmt->bind_param("i", $cust_id);
 $stmt->execute();
 $result = $stmt->get_result();
